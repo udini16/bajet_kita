@@ -1,7 +1,7 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const ChartTab = ({ chartData, timeFilter, setTimeFilter, viewType, setViewType, timeOptions }) => {
+const ChartTab = ({ chartData, timeFilter, setTimeFilter, viewType, setViewType, timeOptions, expenses, incomes }) => {
   const formatMonth = (yyyyMm) => {
     const [y, m] = yyyyMm.split('-');
     const date = new Date(y, parseInt(m) - 1);
@@ -11,7 +11,7 @@ const ChartTab = ({ chartData, timeFilter, setTimeFilter, viewType, setViewType,
   return (
     <div className="animate-fade-in-up bg-[#3a3a3a] p-4 sm:p-6 rounded-xl shadow-sm border border-[#4a4a4a] flex flex-col h-[calc(100vh-200px)] sm:h-[500px]">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-        <h3 className="text-base sm:text-lg font-semibold text-bajet-cream">Expenses Over Time</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-bajet-cream">Transactions Over Time</h3>
         <div className="flex items-center gap-2 bg-[#2f2f2f] p-1 rounded-lg border border-[#4a4a4a]">
           <select 
             value={timeFilter} 
@@ -62,11 +62,12 @@ const ChartTab = ({ chartData, timeFilter, setTimeFilter, viewType, setViewType,
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#fff8ec' }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#fff8ec' }} tickFormatter={(value) => `RM${value}`} />
                 <Tooltip 
-                  formatter={(value) => [`RM ${parseFloat(value).toFixed(2)}`, 'Amount']}
+                  formatter={(value, name) => [`RM ${parseFloat(value).toFixed(2)}`, name === 'incomeAmount' ? 'Income' : 'Expense']}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)', backgroundColor: '#3a3a3a', color: '#fff8ec' }}
                   itemStyle={{ color: '#fff8ec' }}
                 />
-                <Line type="monotone" dataKey="amount" stroke="#df5584" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, stroke: '#df5584', strokeWidth: 2, fill: '#fff' }} />
+                <Line type="monotone" dataKey="incomeAmount" stroke="#a3e635" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, stroke: '#a3e635', strokeWidth: 2, fill: '#fff' }} />
+                <Line type="monotone" dataKey="expenseAmount" stroke="#df5584" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, stroke: '#df5584', strokeWidth: 2, fill: '#fff' }} />
               </LineChart>
             </ResponsiveContainer>
           ) : (
@@ -80,14 +81,16 @@ const ChartTab = ({ chartData, timeFilter, setTimeFilter, viewType, setViewType,
               <thead className="text-xs text-gray-400 uppercase bg-[#2f2f2f] sticky top-0 border border-[#4a4a4a]">
                 <tr>
                   <th className="px-4 py-3 font-medium rounded-tl-lg">Period</th>
-                  <th className="px-4 py-3 font-medium text-right rounded-tr-lg">Amount</th>
+                  <th className="px-4 py-3 font-medium text-right text-[#a3e635]">Income</th>
+                  <th className="px-4 py-3 font-medium text-right text-bajet-pink rounded-tr-lg">Expense</th>
                 </tr>
               </thead>
               <tbody>
                 {chartData.map((data, index) => (
                   <tr key={index} className="border-b border-[#4a4a4a] hover:bg-[#2f2f2f] transition-colors">
                     <td className="px-4 py-3 font-medium text-bajet-cream">{data.name}</td>
-                    <td className="px-4 py-3 text-right font-bold text-bajet-cream">RM {parseFloat(data.amount).toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right font-bold text-[#a3e635]">+RM {parseFloat(data.incomeAmount).toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right font-bold text-bajet-pink">-RM {parseFloat(data.expenseAmount).toFixed(2)}</td>
                   </tr>
                 ))}
                 {chartData.length === 0 && (

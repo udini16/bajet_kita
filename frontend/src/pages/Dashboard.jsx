@@ -12,6 +12,7 @@ import SettingsTab from '../components/tabs/SettingsTab';
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const [expenses, setExpenses] = useState([]);
+  const [incomes, setIncomes] = useState([]);
   const [categories, setCategories] = useState([]);
   
   // Navigation State
@@ -25,6 +26,7 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentExpenseId, setCurrentExpenseId] = useState(null);
+  const [transactionType, setTransactionType] = useState('expense');
   
   // Form State
   const [formData, setFormData] = useState({
@@ -36,8 +38,18 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchExpenses();
+    fetchIncomes();
     fetchCategories();
   }, []);
+
+  const fetchIncomes = async () => {
+    try {
+      const res = await api.get('/incomes');
+      setIncomes(res.data);
+    } catch (error) {
+      console.error('Failed to fetch incomes', error);
+    }
+  };
 
   const fetchExpenses = async () => {
     try {
@@ -61,15 +73,20 @@ const Dashboard = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleOpenModal = (expense = null) => {
-    if (expense) {
+  const handleOpenModal = (item = null, type = 'expense') => {
+    setTransactionType(type);
+    
+    // Filter categories based on selected type
+    const availableCategories = categories.filter(c => c.type === type);
+    
+    if (item) {
       setIsEditing(true);
-      setCurrentExpenseId(expense.id);
+      setCurrentExpenseId(item.id);
       setFormData({
-        description: expense.description,
-        amount: expense.amount,
-        category_id: expense.category_id,
-        date: expense.date
+        description: item.description,
+        amount: item.amount,
+        category_id: item.category_id,
+        date: item.date
       });
     } else {
       setIsEditing(false);
@@ -77,7 +94,7 @@ const Dashboard = () => {
       setFormData({
         description: '',
         amount: '',
-        category_id: categories.length > 0 ? categories[0].id : '',
+        category_id: availableCategories.length > 0 ? availableCategories[0].id : '',
         date: new Date().toISOString().split('T')[0]
       });
     }
@@ -90,33 +107,44 @@ const Dashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const endpoint = transactionType === 'income' ? '/incomes' : '/expenses';
+    const stateUpdater = transactionType === 'income' ? setIncomes : setExpenses;
+    const currentState = transactionType === 'income' ? incomes : expenses;
+
     try {
       if (isEditing) {
-        const res = await api.put(`/expenses/${currentExpenseId}`, formData);
-        setExpenses(expenses.map(exp => exp.id === currentExpenseId ? res.data : exp));
+        const res = await api.put(`${endpoint}/${currentExpenseId}`, formData);
+        stateUpdater(currentState.map(item => item.id === currentExpenseId ? res.data : item));
       } else {
-        const res = await api.post('/expenses', formData);
-        setExpenses([res.data, ...expenses].sort((a, b) => new Date(b.date) - new Date(a.date)));
+        const res = await api.post(endpoint, formData);
+        stateUpdater([res.data, ...currentState].sort((a, b) => new Date(b.date) - new Date(a.date)));
       }
       handleCloseModal();
     } catch (error) {
-      console.error('Failed to save expense', error);
+      console.error(`Failed to save ${transactionType}`, error);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this expense?')) {
+  const handleDelete = async (id, type = 'expense') => {
+    if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
+      const endpoint = type === 'income' ? '/incomes' : '/expenses';
+      const stateUpdater = type === 'income' ? setIncomes : setExpenses;
+      const currentState = type === 'income' ? incomes : expenses;
+      
       try {
-        await api.delete(`/expenses/${id}`);
-        setExpenses(expenses.filter(exp => exp.id !== id));
+        await api.delete(`${endpoint}/${id}`);
+        stateUpdater(currentState.filter(item => item.id !== id));
       } catch (error) {
-        console.error('Failed to delete expense', error);
+        console.error(`Failed to delete ${type}`, error);
       }
     }
   };
 
   // Data Aggregations for HomeTab
   const totalExpenses = expenses.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
+  const totalIncomes = incomes.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
+  const netBalance = totalIncomes - totalExpenses;
+
   const categoryTotals = expenses.reduce((acc, curr) => {
     const catName = curr.category?.name || 'Uncategorized';
     acc[catName] = (acc[catName] || 0) + parseFloat(curr.amount);
@@ -130,7 +158,6 @@ const Dashboard = () => {
       largestCategory = cat;
     }
   }
-  const remainingBudget = 3000 - totalExpenses; // Fixed budget for now
 
   // Dynamic time options
   const timeOptions = React.useMemo(() => {
@@ -150,34 +177,49 @@ const Dashboard = () => {
   // Data Aggregation for ChartTab
   const processChartData = () => {
     let filteredExpenses = [...expenses];
+    let filteredIncomes = [...incomes];
 
     if (timeFilter.startsWith('month-')) {
       const [_, year, month] = timeFilter.split('-');
-      filteredExpenses = filteredExpenses.filter(exp => {
-        const d = new Date(exp.date);
+      const filterFn = item => {
+        const d = new Date(item.date);
         return d.getFullYear() === parseInt(year) && d.getMonth() + 1 === parseInt(month);
-      });
+      };
+      filteredExpenses = filteredExpenses.filter(filterFn);
+      filteredIncomes = filteredIncomes.filter(filterFn);
     } else if (timeFilter.startsWith('year-')) {
       const year = timeFilter.split('-')[1];
-      filteredExpenses = filteredExpenses.filter(exp => {
-        const d = new Date(exp.date);
+      const filterFn = item => {
+        const d = new Date(item.date);
         return d.getFullYear() === parseInt(year);
-      });
+      };
+      filteredExpenses = filteredExpenses.filter(filterFn);
+      filteredIncomes = filteredIncomes.filter(filterFn);
     }
 
-    const aggregated = filteredExpenses.reduce((acc, exp) => {
-      let key;
-      const d = new Date(exp.date);
-      if (timeFilter.startsWith('month-')) {
-        key = d.getDate().toString();
-      } else if (timeFilter.startsWith('year-')) {
-        key = d.toLocaleDateString('en-US', { month: 'short' });
-      } else {
-        key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      }
-      acc[key] = (acc[key] || 0) + parseFloat(exp.amount);
-      return acc;
-    }, {});
+    const aggregated = {};
+    
+    const aggregateData = (data, typeKey) => {
+      data.forEach(item => {
+        let key;
+        const d = new Date(item.date);
+        if (timeFilter.startsWith('month-')) {
+          key = d.getDate().toString();
+        } else if (timeFilter.startsWith('year-')) {
+          key = d.toLocaleDateString('en-US', { month: 'short' });
+        } else {
+          key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        }
+        
+        if (!aggregated[key]) {
+          aggregated[key] = { expenseAmount: 0, incomeAmount: 0 };
+        }
+        aggregated[key][typeKey] += parseFloat(item.amount);
+      });
+    };
+
+    aggregateData(filteredExpenses, 'expenseAmount');
+    aggregateData(filteredIncomes, 'incomeAmount');
 
     let sortedKeys;
     if (timeFilter.startsWith('month-')) {
@@ -191,7 +233,8 @@ const Dashboard = () => {
 
     return sortedKeys.map(key => ({
       name: key,
-      amount: aggregated[key]
+      expenseAmount: aggregated[key].expenseAmount,
+      incomeAmount: aggregated[key].incomeAmount
     }));
   };
   const chartData = processChartData();
@@ -202,9 +245,11 @@ const Dashboard = () => {
       case 'home':
         return (
           <HomeTab 
+            netBalance={netBalance}
+            totalIncomes={totalIncomes}
             totalExpenses={totalExpenses}
             largestCategory={largestCategory}
-            remainingBudget={remainingBudget}
+            incomes={incomes}
             expenses={expenses}
             handleOpenModal={handleOpenModal}
             handleDelete={handleDelete}
@@ -213,12 +258,14 @@ const Dashboard = () => {
       case 'chart':
         return (
           <ChartTab 
-            chartData={chartData}
+            chartData={chartData} // We'll update ChartTab data aggregation next
             timeFilter={timeFilter}
             setTimeFilter={setTimeFilter}
             viewType={viewType}
             setViewType={setViewType}
             timeOptions={timeOptions}
+            expenses={expenses}
+            incomes={incomes}
           />
         );
       case 'plan':
@@ -251,13 +298,13 @@ const Dashboard = () => {
             <h1 className="text-2xl font-bold text-bajet-yellow capitalize">{currentTab}</h1>
             <p className="text-sm text-gray-400 mt-1">Welcome back, {user?.name}!</p>
           </div>
-          <button 
-            onClick={() => handleOpenModal()}
-            className="px-4 py-2 bg-bajet-purple text-bajet-cream rounded-lg hover:bg-[#6c6ebe] transition-colors font-medium flex items-center gap-2 shadow-[0_0_15px_rgba(90,92,168,0.4)]"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-            Add Expense
-          </button>
+            <button 
+              onClick={() => handleOpenModal()}
+              className="px-4 py-2 bg-bajet-purple text-bajet-cream rounded-lg hover:bg-[#6c6ebe] transition-colors font-medium flex items-center gap-2 shadow-[0_0_15px_rgba(90,92,168,0.4)]"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+              Add Transaction
+            </button>
         </header>
 
         {/* Tab Content (Scrollable) */}
@@ -276,13 +323,40 @@ const Dashboard = () => {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-[#3a3a3a] rounded-2xl w-full max-w-md overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)] animate-scale-up border border-[#4a4a4a]">
             <div className="px-6 py-4 border-b border-[#4a4a4a] flex justify-between items-center bg-[#2f2f2f]">
-              <h2 className="text-xl font-bold text-bajet-cream">{isEditing ? 'Edit Expense' : 'Add New Expense'}</h2>
+              <h2 className="text-xl font-bold text-bajet-cream">{isEditing ? `Edit ${transactionType === 'income' ? 'Income' : 'Expense'}` : 'Add New Transaction'}</h2>
               <button onClick={handleCloseModal} className="text-gray-400 hover:text-bajet-pink transition-colors p-1 rounded-full hover:bg-[#3f3f3f]">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
             
             <form onSubmit={handleSubmit} className="p-6">
+              {!isEditing && (
+                <div className="flex bg-[#2f2f2f] rounded-lg p-1 mb-6 border border-[#4a4a4a]">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setTransactionType('expense');
+                      const expenseCats = categories.filter(c => c.type === 'expense');
+                      setFormData(prev => ({ ...prev, category_id: expenseCats.length > 0 ? expenseCats[0].id : '' }));
+                    }}
+                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${transactionType === 'expense' ? 'bg-[#df5584] text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                  >
+                    Expense
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setTransactionType('income');
+                      const incomeCats = categories.filter(c => c.type === 'income');
+                      setFormData(prev => ({ ...prev, category_id: incomeCats.length > 0 ? incomeCats[0].id : '' }));
+                    }}
+                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${transactionType === 'income' ? 'bg-[#a3e635] text-[#2f2f2f] shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                  >
+                    Income
+                  </button>
+                </div>
+              )}
+              
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
@@ -302,7 +376,7 @@ const Dashboard = () => {
                     <label className="block text-sm font-medium text-gray-300 mb-1">Category</label>
                     <select name="category_id" value={formData.category_id} onChange={handleInputChange} required className="w-full px-4 py-2 border border-[#5a5ca8] rounded-lg focus:ring-2 focus:ring-bajet-pink focus:border-bajet-pink transition-all outline-none bg-[#2f2f2f] text-bajet-cream cursor-pointer">
                       <option value="" disabled>Select</option>
-                      {categories.map(cat => (
+                      {categories.filter(c => c.type === transactionType).map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                       ))}
                     </select>
@@ -317,7 +391,7 @@ const Dashboard = () => {
               
               <div className="mt-8 flex gap-3">
                 <button type="button" onClick={handleCloseModal} className="flex-1 px-4 py-2 bg-[#2f2f2f] text-gray-300 font-medium rounded-lg hover:bg-[#4a4a4a] transition-colors border border-[#4a4a4a]">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-bajet-purple text-bajet-cream font-medium rounded-lg hover:bg-[#6c6ebe] transition-colors shadow-[0_0_15px_rgba(90,92,168,0.4)]">{isEditing ? 'Save Changes' : 'Add Expense'}</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-bajet-purple text-bajet-cream font-medium rounded-lg hover:bg-[#6c6ebe] transition-colors shadow-[0_0_15px_rgba(90,92,168,0.4)]">{isEditing ? 'Save Changes' : `Add ${transactionType === 'income' ? 'Income' : 'Expense'}`}</button>
               </div>
             </form>
           </div>

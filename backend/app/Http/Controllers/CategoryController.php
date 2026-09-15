@@ -7,8 +7,12 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Category::all());
+        $query = Category::query();
+        if ($request->has('type')) {
+            $query->where('type', $request->query('type'));
+        }
+        return response()->json($query->get());
     }
 }
