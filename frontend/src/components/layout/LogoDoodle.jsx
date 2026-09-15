@@ -2,7 +2,7 @@ import React from 'react';
 
 const LogoDoodle = ({ text = 'BajetKita', fontSize = '2rem' }) => {
   return (
-    <div style={{ width: '100%', height: '40px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '40px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden', marginLeft: '-36px' }}>
       <css-doodle click-to-update>
         {`
           :doodle {
