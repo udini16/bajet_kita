@@ -1,9 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="20" fill="#2f2f2f" />
-  <text x="50" y="65" font-family="system-ui, -apple-system, sans-serif" font-size="50" font-weight="900" fill="#feb944" text-anchor="middle">
-    <tspan fill="#df5584">B</tspan><tspan fill="#5a5ca8">K</tspan>
+  <text x="50" y="80" font-family="system-ui, -apple-system, sans-serif" font-size="90" font-weight="900" fill="#df5584" text-anchor="middle">
+    B
   </text>
-  <text x="50" y="65" font-family="system-ui, -apple-system, sans-serif" font-size="50" font-weight="900" fill="none" stroke="#fff8ec" stroke-width="2" text-anchor="middle">
-    BK
+  <text x="50" y="80" font-family="system-ui, -apple-system, sans-serif" font-size="90" font-weight="900" fill="none" stroke="#fff8ec" stroke-width="2" text-anchor="middle">
+    B
   </text>
 </svg>
