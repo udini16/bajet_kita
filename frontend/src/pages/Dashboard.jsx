@@ -16,7 +16,7 @@ const Dashboard = () => {
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
   
-  // Modal State
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentExpenseId, setCurrentExpenseId] = useState(null);
@@ -135,17 +135,38 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen p-8 font-sans text-gray-800 bg-gray-50">
       <div className="max-w-5xl mx-auto">
-        <header className="mb-8 flex justify-between items-center">
+        <header className="mb-6 flex justify-between items-start sm:items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Expense Tracker Dashboard</h1>
-            <p className="text-gray-500">Welcome back, {user?.name}! Here's your financial overview.</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Expense Tracker Dashboard</h1>
+            <p className="text-sm text-gray-500 mt-1">Welcome back, {user?.name}!</p>
           </div>
-          <button 
-            onClick={logout}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-          >
-            Logout
-          </button>
+          
+          <div className="relative">
+            <button 
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold hover:bg-indigo-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              title="Profile"
+            >
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            </button>
+            
+            {isProfileOpen && (
+              <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 animate-fade-in-up">
+                <div className="p-4 border-b border-gray-100">
+                  <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                </div>
+                <div className="p-2">
+                  <button
+                    onClick={logout}
+                    className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors font-medium"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </header>
 
         <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-8">
