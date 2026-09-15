@@ -168,15 +168,15 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Chart Section */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 flex flex-col">
-            <h3 className="text-lg font-semibold mb-4">Expenses Over Time</h3>
-            <div className="flex-1 min-h-[250px]">
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 flex flex-col">
+            <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Expenses Over Time</h3>
+            <div className="flex-1 min-h-[150px] sm:min-h-[250px]">
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280'}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280'}} tickFormatter={(value) => `RM ${value}`} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} tickFormatter={(value) => `RM ${value}`} />
                     <Tooltip 
                       contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
                       formatter={(value) => [`RM ${value}`, 'Total']}
@@ -185,7 +185,7 @@ const Dashboard = () => {
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-gray-400">
+                <div className="h-full flex items-center justify-center text-gray-400 text-sm">
                   No data to display yet. Add some expenses!
                 </div>
               )}
@@ -193,7 +193,7 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Expenses List */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col max-h-[400px]">
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col max-h-[300px] sm:max-h-[400px]">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Recent Expenses</h3>
               <button 
