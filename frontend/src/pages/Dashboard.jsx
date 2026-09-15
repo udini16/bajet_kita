@@ -16,6 +16,9 @@ const Dashboard = () => {
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
   
+  const [viewType, setViewType] = useState('chart');
+  const [timeFilter, setTimeFilter] = useState('all');
+  
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -118,19 +121,58 @@ const Dashboard = () => {
 
   const remainingBudget = 3000 - totalExpenses; // Fixed budget of 3000 for now
 
-  // Chart Data Preparation (Grouping by Date)
-  const chartDataMap = expenses.reduce((acc, exp) => {
-    const date = exp.date;
-    acc[date] = (acc[date] || 0) + parseFloat(exp.amount);
-    return acc;
-  }, {});
-  
-  const chartData = Object.keys(chartDataMap)
-    .sort() // Sort chronologically
-    .map(date => ({
-      name: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      amount: chartDataMap[date]
+  // Chart Data Preparation
+  const processChartData = () => {
+    let filteredExpenses = [...expenses];
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    if (timeFilter === 'month') {
+      filteredExpenses = filteredExpenses.filter(exp => {
+        const d = new Date(exp.date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      });
+    } else if (timeFilter === 'year') {
+      filteredExpenses = filteredExpenses.filter(exp => {
+        const d = new Date(exp.date);
+        return d.getFullYear() === currentYear;
+      });
+    }
+
+    const aggregated = filteredExpenses.reduce((acc, exp) => {
+      let key;
+      const d = new Date(exp.date);
+      
+      if (timeFilter === 'month') {
+        key = d.getDate().toString();
+      } else if (timeFilter === 'year') {
+        key = d.toLocaleDateString('en-US', { month: 'short' });
+      } else {
+        key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      acc[key] = (acc[key] || 0) + parseFloat(exp.amount);
+      return acc;
+    }, {});
+
+    let sortedKeys;
+    if (timeFilter === 'month') {
+      sortedKeys = Object.keys(aggregated).sort((a, b) => parseInt(a) - parseInt(b));
+    } else if (timeFilter === 'year') {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      sortedKeys = Object.keys(aggregated).sort((a, b) => months.indexOf(a) - months.indexOf(b));
+    } else {
+      sortedKeys = Object.keys(aggregated).sort();
+    }
+
+    return sortedKeys.map(key => ({
+      name: key,
+      amount: aggregated[key]
     }));
+  };
+
+  const chartData = processChartData();
 
   return (
     <div className="min-h-screen p-8 font-sans text-gray-800 bg-gray-50">
@@ -190,21 +232,72 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-col">
           {/* Chart Section */}
           <div className="order-2 lg:order-1 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 flex flex-col">
-            <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Expenses Over Time</h3>
-            <div className="flex-1 min-h-[150px] sm:min-h-[250px]">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+              <h3 className="text-base sm:text-lg font-semibold">Expenses Over Time</h3>
+              <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                <select 
+                  value={timeFilter} 
+                  onChange={(e) => setTimeFilter(e.target.value)}
+                  className="bg-white border-none rounded-md text-xs sm:text-sm font-medium py-1.5 px-2 focus:ring-0 shadow-sm cursor-pointer outline-none"
+                >
+                  <option value="all">All Time</option>
+                  <option value="year">This Year</option>
+                  <option value="month">This Month</option>
+                </select>
+                <div className="flex items-center bg-white rounded-md p-1 shadow-sm">
+                  <button 
+                    onClick={() => setViewType('chart')}
+                    className={`p-1 rounded ${viewType === 'chart' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
+                    title="Chart View"
+                  >
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                  </button>
+                  <button 
+                    onClick={() => setViewType('list')}
+                    className={`p-1 rounded ${viewType === 'list' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
+                    title="List View"
+                  >
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex-1 min-h-[200px] sm:min-h-[250px]">
               {chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} tickFormatter={(value) => `RM ${value}`} />
-                    <Tooltip 
-                      contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-                      formatter={(value) => [`RM ${value}`, 'Total']}
-                    />
-                    <Line type="monotone" dataKey="amount" stroke="#4f46e5" strokeWidth={3} dot={{r: 4, fill: '#4f46e5'}} activeDot={{r: 6}} animationDuration={1000} />
-                  </LineChart>
-                </ResponsiveContainer>
+                viewType === 'chart' ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} tickFormatter={(value) => `RM ${value}`} />
+                      <Tooltip 
+                        contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+                        formatter={(value) => [`RM ${value.toFixed(2)}`, 'Total']}
+                      />
+                      <Line type="monotone" dataKey="amount" stroke="#4f46e5" strokeWidth={3} dot={{r: 4, fill: '#4f46e5'}} activeDot={{r: 6}} animationDuration={1000} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="overflow-y-auto max-h-[250px] pr-2 scrollbar-thin scrollbar-thumb-gray-200">
+                    <table className="w-full text-left text-sm text-gray-500">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="px-4 py-3 rounded-tl-lg">Period</th>
+                          <th className="px-4 py-3 rounded-tr-lg text-right">Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {chartData.map((data, index) => (
+                          <tr key={index} className="bg-white border-b last:border-0 hover:bg-gray-50">
+                            <td className="px-4 py-3 font-medium text-gray-900">{data.name}</td>
+                            <td className="px-4 py-3 text-right font-bold text-gray-900">RM {data.amount.toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
               ) : (
                 <div className="h-full flex items-center justify-center text-gray-400 text-sm">
                   No data to display yet. Add some expenses!
