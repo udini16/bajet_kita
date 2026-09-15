@@ -2,12 +2,14 @@ import React from 'react';
 
 const PlanTab = () => {
   return (
-    <div className="animate-fade-in-up bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center h-[60vh] text-center">
-      <div className="bg-indigo-50 p-4 rounded-full mb-4">
-        <svg className="w-12 h-12 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+    <div className="animate-fade-in-up bg-[#3a3a3a] p-6 rounded-xl shadow-sm border border-[#4a4a4a] h-[500px] flex flex-col items-center justify-center text-center">
+      <div className="w-16 h-16 bg-[#2f2f2f] rounded-full flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(90,92,168,0.3)] text-bajet-purple">
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
       </div>
-      <h2 className="text-xl font-bold text-gray-900 mb-2">Planning & Goals</h2>
-      <p className="text-gray-500 max-w-md">Set budgeting goals and track your savings over time. This feature is coming soon!</p>
+      <h3 className="text-xl font-bold text-bajet-cream mb-2">Budget Planning</h3>
+      <p className="text-gray-400 max-w-sm">
+        Set monthly limits for your categories and track your progress. Coming soon!
+      </p>
     </div>
   );
 };

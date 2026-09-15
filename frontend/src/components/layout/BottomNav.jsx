@@ -18,7 +18,7 @@ const BottomNav = ({ currentTab, setCurrentTab, handleOpenModal }) => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40 lg:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-[#232323] border-t border-[#3f3f3f] pb-safe shadow-[0_-4px_15px_rgba(0,0,0,0.3)] z-40 lg:hidden">
       <div className="flex justify-around items-end h-16 px-2 pb-2">
         {tabs.map((tab) => {
           if (tab.isFab) {
@@ -26,7 +26,7 @@ const BottomNav = ({ currentTab, setCurrentTab, handleOpenModal }) => {
               <div key="add-fab" className="relative -top-5">
                 <button
                   onClick={() => handleOpenModal()}
-                  className="w-14 h-14 bg-purple-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-purple-600 transition-colors transform hover:scale-105"
+                  className="w-14 h-14 bg-bajet-purple rounded-full flex items-center justify-center text-bajet-cream shadow-[0_0_20px_rgba(90,92,168,0.6)] hover:bg-[#6c6ebe] transition-colors transform hover:scale-105"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
                 </button>
@@ -39,7 +39,7 @@ const BottomNav = ({ currentTab, setCurrentTab, handleOpenModal }) => {
             <button
               key={tab.id}
               onClick={() => setCurrentTab(tab.id)}
-              className={`flex flex-col items-center justify-center w-16 h-12 transition-colors ${isActive ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex flex-col items-center justify-center w-16 h-12 transition-colors ${isActive ? 'text-bajet-yellow' : 'text-gray-400 hover:text-bajet-cream'}`}
             >
               <div className="mb-1">{tab.icon}</div>
               <span className={`text-[10px] font-medium ${isActive ? 'font-bold' : ''}`}>{tab.label}</span>

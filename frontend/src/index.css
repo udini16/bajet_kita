@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
 @theme {
+  --color-bajet-dark: #2f2f2f;
+  --color-bajet-cream: #fff8ec;
+  --color-bajet-yellow: #feb944;
+  --color-bajet-orange: #fe6842;
+  --color-bajet-pink: #df5584;
+  --color-bajet-purple: #5a5ca8;
+
   --animate-fade-in-up: fadeInUp 0.3s ease-out;
 
   @keyframes fadeInUp {
@@ -17,5 +24,6 @@
 
 /* Custom styles for the app */
 body {
-  background-color: #f3f4f6; /* Tailwind gray-100 */
+  background-color: var(--color-bajet-dark);
+  color: var(--color-bajet-cream);
 }

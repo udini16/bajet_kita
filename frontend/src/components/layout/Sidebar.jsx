@@ -1,4 +1,5 @@
 import React from 'react';
+import LogoDoodle from './LogoDoodle';
 
 const Sidebar = ({ currentTab, setCurrentTab }) => {
   const tabs = [
@@ -17,9 +18,9 @@ const Sidebar = ({ currentTab, setCurrentTab }) => {
   ];
 
   return (
-    <div className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-100 min-h-screen">
+    <div className="hidden lg:flex flex-col w-64 bg-[#232323] border-r border-[#3f3f3f] min-h-screen">
       <div className="p-6">
-        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Expensify</h2>
+        <LogoDoodle fontSize="2rem" />
       </div>
       <nav className="flex-1 px-4 space-y-2 mt-4">
         {tabs.map(tab => {
@@ -30,8 +31,8 @@ const Sidebar = ({ currentTab, setCurrentTab }) => {
               onClick={() => setCurrentTab(tab.id)}
               className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 isActive 
-                  ? 'bg-indigo-50 text-indigo-700' 
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-bajet-purple text-bajet-cream shadow-[0_0_15px_rgba(90,92,168,0.4)]' 
+                  : 'text-gray-400 hover:bg-[#2f2f2f] hover:text-bajet-cream'
               }`}
             >
               {tab.icon}

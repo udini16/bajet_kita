@@ -3,6 +3,7 @@ import api from '../utils/axios';
 import { AuthContext } from '../context/AuthContext';
 import BottomNav from '../components/layout/BottomNav';
 import Sidebar from '../components/layout/Sidebar';
+import LogoDoodle from '../components/layout/LogoDoodle';
 import HomeTab from '../components/tabs/HomeTab';
 import ChartTab from '../components/tabs/ChartTab';
 import PlanTab from '../components/tabs/PlanTab';
@@ -230,29 +231,29 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-gray-800">
+    <div className="flex h-screen bg-bajet-dark overflow-hidden font-sans text-bajet-cream">
       {/* Desktop Sidebar */}
       <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} />
       
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative h-full w-full max-w-full">
         {/* Mobile Header */}
-        <header className="lg:hidden bg-white border-b border-gray-100 p-4 sticky top-0 z-10 flex justify-between items-center shadow-sm shrink-0">
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Expensify</h1>
-          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm">
+        <header className="lg:hidden bg-bajet-dark border-b border-[#3f3f3f] p-4 sticky top-0 z-10 flex justify-between items-center shadow-sm shrink-0">
+          <div className="w-48"><LogoDoodle fontSize="1.5rem" /></div>
+          <div className="w-8 h-8 rounded-full bg-bajet-purple text-bajet-cream font-bold flex items-center justify-center text-sm shadow-[0_0_10px_rgba(90,92,168,0.5)]">
             {user?.name?.charAt(0).toUpperCase() || 'U'}
           </div>
         </header>
 
         {/* Desktop Header */}
-        <header className="hidden lg:flex bg-white border-b border-gray-100 p-6 justify-between items-center shrink-0">
+        <header className="hidden lg:flex bg-bajet-dark border-b border-[#3f3f3f] p-6 justify-between items-center shrink-0">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 capitalize">{currentTab}</h1>
-            <p className="text-sm text-gray-500 mt-1">Welcome back, {user?.name}!</p>
+            <h1 className="text-2xl font-bold text-bajet-yellow capitalize">{currentTab}</h1>
+            <p className="text-sm text-gray-400 mt-1">Welcome back, {user?.name}!</p>
           </div>
           <button 
             onClick={() => handleOpenModal()}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2 shadow-sm"
+            className="px-4 py-2 bg-bajet-purple text-bajet-cream rounded-lg hover:bg-[#6c6ebe] transition-colors font-medium flex items-center gap-2 shadow-[0_0_15px_rgba(90,92,168,0.4)]"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
             Add Expense
@@ -272,11 +273,11 @@ const Dashboard = () => {
 
       {/* Add/Edit Expense Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-up">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h2 className="text-xl font-bold text-gray-900">{isEditing ? 'Edit Expense' : 'Add New Expense'}</h2>
-              <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-[#3a3a3a] rounded-2xl w-full max-w-md overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)] animate-scale-up border border-[#4a4a4a]">
+            <div className="px-6 py-4 border-b border-[#4a4a4a] flex justify-between items-center bg-[#2f2f2f]">
+              <h2 className="text-xl font-bold text-bajet-cream">{isEditing ? 'Edit Expense' : 'Add New Expense'}</h2>
+              <button onClick={handleCloseModal} className="text-gray-400 hover:text-bajet-pink transition-colors p-1 rounded-full hover:bg-[#3f3f3f]">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
@@ -284,22 +285,22 @@ const Dashboard = () => {
             <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <input type="text" name="description" value={formData.description} onChange={handleInputChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-gray-50 focus:bg-white" placeholder="e.g. Morning Coffee" />
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                  <input type="text" name="description" value={formData.description} onChange={handleInputChange} required className="w-full px-4 py-2 border border-[#5a5ca8] rounded-lg focus:ring-2 focus:ring-bajet-pink focus:border-bajet-pink transition-all outline-none bg-[#2f2f2f] text-bajet-cream" placeholder="e.g. Morning Coffee" />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount (RM)</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Amount (RM)</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">RM</span>
-                    <input type="number" step="0.01" name="amount" value={formData.amount} onChange={handleInputChange} required className="w-full pl-12 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-gray-50 focus:bg-white" placeholder="0.00" />
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">RM</span>
+                    <input type="number" step="0.01" name="amount" value={formData.amount} onChange={handleInputChange} required className="w-full pl-12 pr-4 py-2 border border-[#5a5ca8] rounded-lg focus:ring-2 focus:ring-bajet-pink focus:border-bajet-pink transition-all outline-none bg-[#2f2f2f] text-bajet-cream" placeholder="0.00" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select name="category_id" value={formData.category_id} onChange={handleInputChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-gray-50 focus:bg-white cursor-pointer">
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Category</label>
+                    <select name="category_id" value={formData.category_id} onChange={handleInputChange} required className="w-full px-4 py-2 border border-[#5a5ca8] rounded-lg focus:ring-2 focus:ring-bajet-pink focus:border-bajet-pink transition-all outline-none bg-[#2f2f2f] text-bajet-cream cursor-pointer">
                       <option value="" disabled>Select</option>
                       {categories.map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -308,15 +309,15 @@ const Dashboard = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                    <input type="date" name="date" value={formData.date} onChange={handleInputChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-gray-50 focus:bg-white cursor-pointer" />
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Date</label>
+                    <input type="date" name="date" value={formData.date} onChange={handleInputChange} required className="w-full px-4 py-2 border border-[#5a5ca8] rounded-lg focus:ring-2 focus:ring-bajet-pink focus:border-bajet-pink transition-all outline-none bg-[#2f2f2f] text-bajet-cream cursor-pointer text-sm" />
                   </div>
                 </div>
               </div>
               
               <div className="mt-8 flex gap-3">
-                <button type="button" onClick={handleCloseModal} className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">{isEditing ? 'Save Changes' : 'Add Expense'}</button>
+                <button type="button" onClick={handleCloseModal} className="flex-1 px-4 py-2 bg-[#2f2f2f] text-gray-300 font-medium rounded-lg hover:bg-[#4a4a4a] transition-colors border border-[#4a4a4a]">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-bajet-purple text-bajet-cream font-medium rounded-lg hover:bg-[#6c6ebe] transition-colors shadow-[0_0_15px_rgba(90,92,168,0.4)]">{isEditing ? 'Save Changes' : 'Add Expense'}</button>
               </div>
             </form>
           </div>
