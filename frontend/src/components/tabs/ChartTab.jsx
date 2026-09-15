@@ -1,7 +1,13 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const ChartTab = ({ chartData, timeFilter, setTimeFilter, viewType, setViewType }) => {
+const ChartTab = ({ chartData, timeFilter, setTimeFilter, viewType, setViewType, timeOptions }) => {
+  const formatMonth = (yyyyMm) => {
+    const [y, m] = yyyyMm.split('-');
+    const date = new Date(y, parseInt(m) - 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
   return (
     <div className="animate-fade-in-up bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[calc(100vh-200px)] sm:h-[500px]">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
@@ -13,8 +19,20 @@ const ChartTab = ({ chartData, timeFilter, setTimeFilter, viewType, setViewType 
             className="bg-white border-none rounded-md text-xs sm:text-sm font-medium py-1.5 px-2 focus:ring-0 shadow-sm cursor-pointer outline-none"
           >
             <option value="all">All Time</option>
-            <option value="year">This Year</option>
-            <option value="month">This Month</option>
+            {timeOptions?.years?.length > 0 && (
+              <optgroup label="By Year">
+                {timeOptions.years.map(y => (
+                  <option key={`year-${y}`} value={`year-${y}`}>{y}</option>
+                ))}
+              </optgroup>
+            )}
+            {timeOptions?.months?.length > 0 && (
+              <optgroup label="By Month">
+                {timeOptions.months.map(m => (
+                  <option key={`month-${m}`} value={`month-${m}`}>{formatMonth(m)}</option>
+                ))}
+              </optgroup>
+            )}
           </select>
           <div className="flex items-center bg-white rounded-md p-1 shadow-sm">
             <button 

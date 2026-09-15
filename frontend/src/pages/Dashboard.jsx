@@ -131,31 +131,45 @@ const Dashboard = () => {
   }
   const remainingBudget = 3000 - totalExpenses; // Fixed budget for now
 
+  // Dynamic time options
+  const timeOptions = React.useMemo(() => {
+    const years = new Set();
+    const months = new Set();
+    expenses.forEach(exp => {
+      const d = new Date(exp.date);
+      years.add(d.getFullYear().toString());
+      months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    });
+    return {
+      years: Array.from(years).sort().reverse(),
+      months: Array.from(months).sort().reverse()
+    };
+  }, [expenses]);
+
   // Data Aggregation for ChartTab
   const processChartData = () => {
     let filteredExpenses = [...expenses];
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
 
-    if (timeFilter === 'month') {
+    if (timeFilter.startsWith('month-')) {
+      const [_, year, month] = timeFilter.split('-');
       filteredExpenses = filteredExpenses.filter(exp => {
         const d = new Date(exp.date);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        return d.getFullYear() === parseInt(year) && d.getMonth() + 1 === parseInt(month);
       });
-    } else if (timeFilter === 'year') {
+    } else if (timeFilter.startsWith('year-')) {
+      const year = timeFilter.split('-')[1];
       filteredExpenses = filteredExpenses.filter(exp => {
         const d = new Date(exp.date);
-        return d.getFullYear() === currentYear;
+        return d.getFullYear() === parseInt(year);
       });
     }
 
     const aggregated = filteredExpenses.reduce((acc, exp) => {
       let key;
       const d = new Date(exp.date);
-      if (timeFilter === 'month') {
+      if (timeFilter.startsWith('month-')) {
         key = d.getDate().toString();
-      } else if (timeFilter === 'year') {
+      } else if (timeFilter.startsWith('year-')) {
         key = d.toLocaleDateString('en-US', { month: 'short' });
       } else {
         key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -165,9 +179,9 @@ const Dashboard = () => {
     }, {});
 
     let sortedKeys;
-    if (timeFilter === 'month') {
+    if (timeFilter.startsWith('month-')) {
       sortedKeys = Object.keys(aggregated).sort((a, b) => parseInt(a) - parseInt(b));
-    } else if (timeFilter === 'year') {
+    } else if (timeFilter.startsWith('year-')) {
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       sortedKeys = Object.keys(aggregated).sort((a, b) => months.indexOf(a) - months.indexOf(b));
     } else {
@@ -203,6 +217,7 @@ const Dashboard = () => {
             setTimeFilter={setTimeFilter}
             viewType={viewType}
             setViewType={setViewType}
+            timeOptions={timeOptions}
           />
         );
       case 'plan':
