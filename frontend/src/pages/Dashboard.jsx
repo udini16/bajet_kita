@@ -166,9 +166,9 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-col">
           {/* Chart Section */}
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 flex flex-col">
+          <div className="order-2 lg:order-1 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 flex flex-col">
             <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Expenses Over Time</h3>
             <div className="flex-1 min-h-[150px] sm:min-h-[250px]">
               {chartData.length > 0 ? (
@@ -193,7 +193,7 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Expenses List */}
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col max-h-[300px] sm:max-h-[400px]">
+          <div className="order-1 lg:order-2 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col max-h-[300px] sm:max-h-[400px]">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Recent Expenses</h3>
               <button 
