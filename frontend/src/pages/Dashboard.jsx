@@ -231,11 +231,45 @@ const Dashboard = () => {
       sortedKeys = Object.keys(aggregated).sort();
     }
 
-    return sortedKeys.map(key => ({
-      name: key,
-      expenseAmount: aggregated[key].expenseAmount,
-      incomeAmount: aggregated[key].incomeAmount
-    }));
+    const categoryAggregated = { expense: {}, income: {} };
+
+    filteredExpenses.forEach(exp => {
+      const catName = exp.category?.name || 'Uncategorized';
+      if (!categoryAggregated.expense[catName]) {
+        categoryAggregated.expense[catName] = { amount: 0, color: exp.category?.color || '#ccc' };
+      }
+      categoryAggregated.expense[catName].amount += parseFloat(exp.amount);
+    });
+
+    filteredIncomes.forEach(inc => {
+      const catName = inc.category?.name || 'Uncategorized';
+      if (!categoryAggregated.income[catName]) {
+        categoryAggregated.income[catName] = { amount: 0, color: inc.category?.color || '#ccc' };
+      }
+      categoryAggregated.income[catName].amount += parseFloat(inc.amount);
+    });
+
+    const categoryData = {
+      expense: Object.keys(categoryAggregated.expense).map(key => ({
+        name: key,
+        amount: categoryAggregated.expense[key].amount,
+        color: categoryAggregated.expense[key].color
+      })).sort((a,b) => b.amount - a.amount),
+      income: Object.keys(categoryAggregated.income).map(key => ({
+        name: key,
+        amount: categoryAggregated.income[key].amount,
+        color: categoryAggregated.income[key].color
+      })).sort((a,b) => b.amount - a.amount),
+    };
+
+    return {
+      timelineData: sortedKeys.map(key => ({
+        name: key,
+        expenseAmount: aggregated[key].expenseAmount,
+        incomeAmount: aggregated[key].incomeAmount
+      })),
+      categoryData
+    };
   };
   const chartData = processChartData();
 
@@ -258,7 +292,8 @@ const Dashboard = () => {
       case 'chart':
         return (
           <ChartTab 
-            chartData={chartData} // We'll update ChartTab data aggregation next
+            chartData={chartData.timelineData}
+            categoryData={chartData.categoryData}
             timeFilter={timeFilter}
             setTimeFilter={setTimeFilter}
             viewType={viewType}
