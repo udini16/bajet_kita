@@ -1,28 +1,31 @@
 import React, { useState, useEffect, useContext } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from 'recharts';
-import { AuthContext } from '../context/AuthContext';
 import api from '../utils/axios';
+import { AuthContext } from '../context/AuthContext';
+import BottomNav from '../components/layout/BottomNav';
+import Sidebar from '../components/layout/Sidebar';
+import HomeTab from '../components/tabs/HomeTab';
+import ChartTab from '../components/tabs/ChartTab';
+import PlanTab from '../components/tabs/PlanTab';
+import SettingsTab from '../components/tabs/SettingsTab';
 
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
   
+  // Navigation State
+  const [currentTab, setCurrentTab] = useState('home');
+  
+  // Chart/Filter States
   const [viewType, setViewType] = useState('chart');
   const [timeFilter, setTimeFilter] = useState('all');
   
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentExpenseId, setCurrentExpenseId] = useState(null);
+  
+  // Form State
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
@@ -31,20 +34,30 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    fetchData();
+    fetchExpenses();
+    fetchCategories();
   }, []);
 
-  const fetchData = async () => {
+  const fetchExpenses = async () => {
     try {
-      const [expensesRes, categoriesRes] = await Promise.all([
-        api.get('/expenses'),
-        api.get('/categories')
-      ]);
-      setExpenses(expensesRes.data);
-      setCategories(categoriesRes.data);
+      const res = await api.get('/expenses');
+      setExpenses(res.data);
     } catch (error) {
-      console.error('Failed to fetch data', error);
+      console.error('Failed to fetch expenses', error);
     }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get('/categories');
+      setCategories(res.data);
+    } catch (error) {
+      console.error('Failed to fetch categories', error);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleOpenModal = (expense = null) => {
@@ -55,7 +68,7 @@ const Dashboard = () => {
         description: expense.description,
         amount: expense.amount,
         category_id: expense.category_id,
-        date: expense.date,
+        date: expense.date
       });
     } else {
       setIsEditing(false);
@@ -101,27 +114,24 @@ const Dashboard = () => {
     }
   };
 
-  // Calculations
-  const totalExpenses = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
-  
-  const categoryTotals = expenses.reduce((acc, exp) => {
-    const catName = exp.category?.name || 'Unknown';
-    acc[catName] = (acc[catName] || 0) + parseFloat(exp.amount);
+  // Data Aggregations for HomeTab
+  const totalExpenses = expenses.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
+  const categoryTotals = expenses.reduce((acc, curr) => {
+    const catName = curr.category?.name || 'Uncategorized';
+    acc[catName] = (acc[catName] || 0) + parseFloat(curr.amount);
     return acc;
   }, {});
-  
   let largestCategory = 'None';
-  let maxCatTotal = 0;
-  Object.keys(categoryTotals).forEach(cat => {
-    if (categoryTotals[cat] > maxCatTotal) {
-      maxCatTotal = categoryTotals[cat];
+  let maxCatAmount = 0;
+  for (const [cat, amt] of Object.entries(categoryTotals)) {
+    if (amt > maxCatAmount) {
+      maxCatAmount = amt;
       largestCategory = cat;
     }
-  });
+  }
+  const remainingBudget = 3000 - totalExpenses; // Fixed budget for now
 
-  const remainingBudget = 3000 - totalExpenses; // Fixed budget of 3000 for now
-
-  // Chart Data Preparation
+  // Data Aggregation for ChartTab
   const processChartData = () => {
     let filteredExpenses = [...expenses];
     const now = new Date();
@@ -143,7 +153,6 @@ const Dashboard = () => {
     const aggregated = filteredExpenses.reduce((acc, exp) => {
       let key;
       const d = new Date(exp.date);
-      
       if (timeFilter === 'month') {
         key = d.getDate().toString();
       } else if (timeFilter === 'year') {
@@ -151,7 +160,6 @@ const Dashboard = () => {
       } else {
         key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       }
-
       acc[key] = (acc[key] || 0) + parseFloat(exp.amount);
       return acc;
     }, {});
@@ -171,265 +179,129 @@ const Dashboard = () => {
       amount: aggregated[key]
     }));
   };
-
   const chartData = processChartData();
 
+  // Render the current tab content
+  const renderTabContent = () => {
+    switch (currentTab) {
+      case 'home':
+        return (
+          <HomeTab 
+            totalExpenses={totalExpenses}
+            largestCategory={largestCategory}
+            remainingBudget={remainingBudget}
+            expenses={expenses}
+            handleOpenModal={handleOpenModal}
+            handleDelete={handleDelete}
+          />
+        );
+      case 'chart':
+        return (
+          <ChartTab 
+            chartData={chartData}
+            timeFilter={timeFilter}
+            setTimeFilter={setTimeFilter}
+            viewType={viewType}
+            setViewType={setViewType}
+          />
+        );
+      case 'plan':
+        return <PlanTab />;
+      case 'settings':
+        return <SettingsTab user={user} logout={logout} />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="min-h-screen p-8 font-sans text-gray-800 bg-gray-50">
-      <div className="max-w-5xl mx-auto">
-        <header className="mb-6 flex justify-between items-start sm:items-center">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Expense Tracker Dashboard</h1>
-            <p className="text-sm text-gray-500 mt-1">Welcome back, {user?.name}!</p>
-          </div>
-          
-          <div className="relative">
-            <button 
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold hover:bg-indigo-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              title="Profile"
-            >
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
-            </button>
-            
-            {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 animate-fade-in-up">
-                <div className="p-4 border-b border-gray-100">
-                  <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                </div>
-                <div className="p-2">
-                  <button
-                    onClick={logout}
-                    className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors font-medium"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
-            )}
+    <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-gray-800">
+      {/* Desktop Sidebar */}
+      <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} />
+      
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col relative h-full w-full max-w-full">
+        {/* Mobile Header */}
+        <header className="lg:hidden bg-white border-b border-gray-100 p-4 sticky top-0 z-10 flex justify-between items-center shadow-sm shrink-0">
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Expensify</h1>
+          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm">
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
           </div>
         </header>
 
-        <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-8">
-          {/* Summary Cards */}
-          <div className="bg-white p-3 sm:p-6 rounded-xl shadow-sm border border-gray-100 transform transition-transform hover:scale-105 flex flex-col justify-center">
-            <h3 className="text-[10px] sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2 truncate" title="Total Expenses">Total</h3>
-            <p className="text-sm sm:text-3xl font-bold text-gray-900 truncate" title={`RM ${totalExpenses.toFixed(2)}`}>RM {totalExpenses.toFixed(2)}</p>
+        {/* Desktop Header */}
+        <header className="hidden lg:flex bg-white border-b border-gray-100 p-6 justify-between items-center shrink-0">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 capitalize">{currentTab}</h1>
+            <p className="text-sm text-gray-500 mt-1">Welcome back, {user?.name}!</p>
           </div>
-          <div className="bg-white p-3 sm:p-6 rounded-xl shadow-sm border border-gray-100 transform transition-transform hover:scale-105 flex flex-col justify-center">
-            <h3 className="text-[10px] sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2 truncate" title="Largest Category">Largest</h3>
-            <p className="text-sm sm:text-3xl font-bold text-gray-900 truncate" title={largestCategory}>{largestCategory}</p>
-          </div>
-          <div className="bg-white p-3 sm:p-6 rounded-xl shadow-sm border border-gray-100 transform transition-transform hover:scale-105 flex flex-col justify-center">
-            <h3 className="text-[10px] sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2 truncate" title="Remaining Budget (RM 3000)">Budget</h3>
-            <p className={`text-sm sm:text-3xl font-bold truncate ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`} title={`RM ${remainingBudget.toFixed(2)}`}>
-              RM {remainingBudget.toFixed(2)}
-            </p>
-          </div>
-        </div>
+          <button 
+            onClick={() => handleOpenModal()}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2 shadow-sm"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+            Add Expense
+          </button>
+        </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-col">
-          {/* Chart Section */}
-          <div className="order-2 lg:order-1 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 flex flex-col">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-              <h3 className="text-base sm:text-lg font-semibold">Expenses Over Time</h3>
-              <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-                <select 
-                  value={timeFilter} 
-                  onChange={(e) => setTimeFilter(e.target.value)}
-                  className="bg-white border-none rounded-md text-xs sm:text-sm font-medium py-1.5 px-2 focus:ring-0 shadow-sm cursor-pointer outline-none"
-                >
-                  <option value="all">All Time</option>
-                  <option value="year">This Year</option>
-                  <option value="month">This Month</option>
-                </select>
-                <div className="flex items-center bg-white rounded-md p-1 shadow-sm">
-                  <button 
-                    onClick={() => setViewType('chart')}
-                    className={`p-1 rounded ${viewType === 'chart' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
-                    title="Chart View"
-                  >
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
-                  </button>
-                  <button 
-                    onClick={() => setViewType('list')}
-                    className={`p-1 rounded ${viewType === 'list' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
-                    title="List View"
-                  >
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex-1 min-h-[200px] sm:min-h-[250px]">
-              {chartData.length > 0 ? (
-                viewType === 'chart' ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} tickFormatter={(value) => `RM ${value}`} />
-                      <Tooltip 
-                        contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-                        formatter={(value) => [`RM ${value.toFixed(2)}`, 'Total']}
-                      />
-                      <Line type="monotone" dataKey="amount" stroke="#4f46e5" strokeWidth={3} dot={{r: 4, fill: '#4f46e5'}} activeDot={{r: 6}} animationDuration={1000} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="overflow-y-auto max-h-[250px] pr-2 scrollbar-thin scrollbar-thumb-gray-200">
-                    <table className="w-full text-left text-sm text-gray-500">
-                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
-                        <tr>
-                          <th className="px-4 py-3 rounded-tl-lg">Period</th>
-                          <th className="px-4 py-3 rounded-tr-lg text-right">Total Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {chartData.map((data, index) => (
-                          <tr key={index} className="bg-white border-b last:border-0 hover:bg-gray-50">
-                            <td className="px-4 py-3 font-medium text-gray-900">{data.name}</td>
-                            <td className="px-4 py-3 text-right font-bold text-gray-900">RM {data.amount.toFixed(2)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-                  No data to display yet. Add some expenses!
-                </div>
-              )}
-            </div>
+        {/* Tab Content (Scrollable) */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 lg:pb-6 relative z-0">
+          <div className="max-w-5xl mx-auto w-full">
+            {renderTabContent()}
           </div>
+        </main>
+        
+        {/* Mobile Bottom Navigation */}
+        <BottomNav currentTab={currentTab} setCurrentTab={setCurrentTab} handleOpenModal={handleOpenModal} />
+      </div>
 
-          {/* Recent Expenses List */}
-          <div className="order-1 lg:order-2 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col max-h-[300px] sm:max-h-[400px]">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Recent Expenses</h3>
-              <button 
-                onClick={() => handleOpenModal()}
-                className="p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm"
-                title="Add New Expense"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
+      {/* Add/Edit Expense Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-up">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h2 className="text-xl font-bold text-gray-900">{isEditing ? 'Edit Expense' : 'Add New Expense'}</h2>
+              <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
             
-            <div className="space-y-3 overflow-y-auto pr-2 flex-1 scrollbar-thin scrollbar-thumb-gray-200">
-              {expenses.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No expenses yet.</p>
-              )}
-              {expenses.map((expense) => (
-                <div key={expense.id} className="flex flex-col p-3 border border-gray-100 hover:border-indigo-100 hover:shadow-sm rounded-lg transition-all group bg-white">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-semibold text-gray-900">{expense.description}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span 
-                          className="inline-block w-2 h-2 rounded-full" 
-                          style={{ backgroundColor: expense.category?.color || '#ccc' }}
-                        ></span>
-                        <p className="text-xs font-medium text-gray-500">{expense.category?.name}</p>
-                        <span className="text-xs text-gray-400">•</span>
-                        <p className="text-xs text-gray-500">{expense.date}</p>
-                      </div>
-                    </div>
-                    <span className="font-bold text-gray-900">RM {parseFloat(expense.amount).toFixed(2)}</span>
-                  </div>
-                  
-                  {/* Action Buttons (visible on hover) */}
-                  <div className="flex justify-end gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => handleOpenModal(expense)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Edit</button>
-                    <button onClick={() => handleDelete(expense.id)} className="text-xs text-red-600 hover:text-red-800 font-medium">Delete</button>
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <input type="text" name="description" value={formData.description} onChange={handleInputChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-gray-50 focus:bg-white" placeholder="e.g. Morning Coffee" />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount (RM)</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">RM</span>
+                    <input type="number" step="0.01" name="amount" value={formData.amount} onChange={handleInputChange} required className="w-full pl-12 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-gray-50 focus:bg-white" placeholder="0.00" />
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Add/Edit Modal Overlay */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-          <div className="relative bg-white rounded-xl shadow-xl p-8 w-full max-w-md animate-fade-in-up">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              {isEditing ? 'Edit Expense' : 'Add New Expense'}
-            </h3>
-            
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name / Description</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                  placeholder="e.g., Grocery shopping"
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select name="category_id" value={formData.category_id} onChange={handleInputChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-gray-50 focus:bg-white cursor-pointer">
+                      <option value="" disabled>Select</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" name="date" value={formData.date} onChange={handleInputChange} required className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-gray-50 focus:bg-white cursor-pointer" />
+                  </div>
+                </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (RM)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  required
-                  value={formData.amount}
-                  onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select
-                  required
-                  value={formData.category_id}
-                  onChange={(e) => setFormData({...formData, category_id: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white"
-                >
-                  <option value="" disabled>Select a category</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input
-                  type="date"
-                  required
-                  value={formData.date}
-                  onChange={(e) => setFormData({...formData, date: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors"
-                >
-                  {isEditing ? 'Save Changes' : 'Add Expense'}
-                </button>
+              
+              <div className="mt-8 flex gap-3">
+                <button type="button" onClick={handleCloseModal} className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">{isEditing ? 'Save Changes' : 'Add Expense'}</button>
               </div>
             </form>
           </div>
