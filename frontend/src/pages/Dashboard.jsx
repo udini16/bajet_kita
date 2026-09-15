@@ -148,19 +148,19 @@ const Dashboard = () => {
           </button>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-8">
           {/* Summary Cards */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transform transition-transform hover:scale-105">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Total Expenses</h3>
-            <p className="text-3xl font-bold text-gray-900">RM {totalExpenses.toFixed(2)}</p>
+          <div className="bg-white p-3 sm:p-6 rounded-xl shadow-sm border border-gray-100 transform transition-transform hover:scale-105 flex flex-col justify-center">
+            <h3 className="text-[10px] sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2 truncate" title="Total Expenses">Total</h3>
+            <p className="text-sm sm:text-3xl font-bold text-gray-900 truncate" title={`RM ${totalExpenses.toFixed(2)}`}>RM {totalExpenses.toFixed(2)}</p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transform transition-transform hover:scale-105">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Largest Category</h3>
-            <p className="text-3xl font-bold text-gray-900">{largestCategory}</p>
+          <div className="bg-white p-3 sm:p-6 rounded-xl shadow-sm border border-gray-100 transform transition-transform hover:scale-105 flex flex-col justify-center">
+            <h3 className="text-[10px] sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2 truncate" title="Largest Category">Largest</h3>
+            <p className="text-sm sm:text-3xl font-bold text-gray-900 truncate" title={largestCategory}>{largestCategory}</p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transform transition-transform hover:scale-105">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Remaining Budget (RM 3000)</h3>
-            <p className={`text-3xl font-bold ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="bg-white p-3 sm:p-6 rounded-xl shadow-sm border border-gray-100 transform transition-transform hover:scale-105 flex flex-col justify-center">
+            <h3 className="text-[10px] sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2 truncate" title="Remaining Budget (RM 3000)">Budget</h3>
+            <p className={`text-sm sm:text-3xl font-bold truncate ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`} title={`RM ${remainingBudget.toFixed(2)}`}>
               RM {remainingBudget.toFixed(2)}
             </p>
           </div>
