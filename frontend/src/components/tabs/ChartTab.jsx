@@ -107,7 +107,7 @@ const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value) => [`RM ${parseFloat(value).toFixed(2)}`, 'Total']}
+                    formatter={(value, name) => [`RM ${parseFloat(value).toFixed(2)}`, name]}
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)', backgroundColor: '#3a3a3a', color: '#fff8ec' }}
                     itemStyle={{ color: '#fff8ec' }}
                   />
