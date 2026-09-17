@@ -216,6 +216,8 @@ const Dashboard = () => {
   const processChartData = () => {
     let filteredExpenses = [...expenses];
     let filteredIncomes = [...incomes];
+    let allSavings = savingPlans.flatMap(p => (p.contributions || []).map(c => ({...c, planName: p.name})));
+    let filteredSavings = [...allSavings];
 
     if (timeFilter.startsWith('month-')) {
       const [_, year, month] = timeFilter.split('-');
@@ -225,6 +227,7 @@ const Dashboard = () => {
       };
       filteredExpenses = filteredExpenses.filter(filterFn);
       filteredIncomes = filteredIncomes.filter(filterFn);
+      filteredSavings = filteredSavings.filter(filterFn);
     } else if (timeFilter.startsWith('year-')) {
       const year = timeFilter.split('-')[1];
       const filterFn = item => {
@@ -233,6 +236,7 @@ const Dashboard = () => {
       };
       filteredExpenses = filteredExpenses.filter(filterFn);
       filteredIncomes = filteredIncomes.filter(filterFn);
+      filteredSavings = filteredSavings.filter(filterFn);
     }
 
     const aggregated = {};
@@ -250,7 +254,7 @@ const Dashboard = () => {
         }
         
         if (!aggregated[key]) {
-          aggregated[key] = { expenseAmount: 0, incomeAmount: 0 };
+          aggregated[key] = { expenseAmount: 0, incomeAmount: 0, savingAmount: 0 };
         }
         aggregated[key][typeKey] += parseFloat(item.amount);
       });
@@ -258,6 +262,7 @@ const Dashboard = () => {
 
     aggregateData(filteredExpenses, 'expenseAmount');
     aggregateData(filteredIncomes, 'incomeAmount');
+    aggregateData(filteredSavings, 'savingAmount');
 
     let sortedKeys;
     if (timeFilter.startsWith('month-')) {
@@ -269,7 +274,7 @@ const Dashboard = () => {
       sortedKeys = Object.keys(aggregated).sort();
     }
 
-    const categoryAggregated = { expense: {}, income: {} };
+    const categoryAggregated = { expense: {}, income: {}, saving: {} };
 
     filteredExpenses.forEach(exp => {
       const catName = exp.category?.name || 'Uncategorized';
@@ -287,6 +292,17 @@ const Dashboard = () => {
       categoryAggregated.income[catName].amount += parseFloat(inc.amount);
     });
 
+    const savingPalette = ['#5a5ca8', '#df5584', '#fe6842', '#feb944', '#a3e635', '#06b6d4'];
+    let savingColorIndex = 0;
+    filteredSavings.forEach(sav => {
+      const planName = sav.planName || 'Unknown Plan';
+      if (!categoryAggregated.saving[planName]) {
+        categoryAggregated.saving[planName] = { amount: 0, color: savingPalette[savingColorIndex % savingPalette.length] };
+        savingColorIndex++;
+      }
+      categoryAggregated.saving[planName].amount += parseFloat(sav.amount);
+    });
+
     const categoryData = {
       expense: Object.keys(categoryAggregated.expense).map(key => ({
         name: key,
@@ -298,13 +314,19 @@ const Dashboard = () => {
         amount: categoryAggregated.income[key].amount,
         color: categoryAggregated.income[key].color
       })).sort((a,b) => b.amount - a.amount),
+      saving: Object.keys(categoryAggregated.saving).map(key => ({
+        name: key,
+        amount: categoryAggregated.saving[key].amount,
+        color: categoryAggregated.saving[key].color
+      })).sort((a,b) => b.amount - a.amount),
     };
 
     return {
       timelineData: sortedKeys.map(key => ({
         name: key,
         expenseAmount: aggregated[key].expenseAmount,
-        incomeAmount: aggregated[key].incomeAmount
+        incomeAmount: aggregated[key].incomeAmount,
+        savingAmount: aggregated[key].savingAmount
       })),
       categoryData
     };

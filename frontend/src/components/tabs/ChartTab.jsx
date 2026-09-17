@@ -14,8 +14,8 @@ const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType
   return (
     <div className="animate-fade-in-up bg-[#3a3a3a] p-4 sm:p-6 rounded-xl shadow-sm border border-[#4a4a4a] flex flex-col h-[calc(100vh-200px)] sm:h-[500px]">
       
-      {/* Top Toggle for Expenses / Income */}
-      <div className="flex bg-[#2f2f2f] rounded-full p-1 mb-6 border border-[#4a4a4a] mx-auto w-full max-w-sm">
+      {/* Top Toggle for Expenses / Income / Savings */}
+      <div className="flex bg-[#2f2f2f] rounded-full p-1 mb-6 border border-[#4a4a4a] mx-auto w-full max-w-md">
         <button 
           onClick={() => setReportType('expense')}
           className={`flex-1 py-2 px-4 text-sm font-bold rounded-full transition-all ${reportType === 'expense' ? 'bg-[#df5584] text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
@@ -27,6 +27,12 @@ const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType
           className={`flex-1 py-2 px-4 text-sm font-bold rounded-full transition-all ${reportType === 'income' ? 'bg-[#a3e635] text-[#2f2f2f] shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
         >
           Income
+        </button>
+        <button 
+          onClick={() => setReportType('saving')}
+          className={`flex-1 py-2 px-4 text-sm font-bold rounded-full transition-all ${reportType === 'saving' ? 'bg-[#5a5ca8] text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+        >
+          Savings
         </button>
       </div>
 
@@ -107,7 +113,7 @@ const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType
                   />
                   {/* Custom Center Text */}
                   <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-bajet-cream">
-                    <tspan x="50%" dy="-10" fontSize="12" fill="#9ca3af">Total {reportType === 'income' ? 'Income' : 'Expenses'}</tspan>
+                    <tspan x="50%" dy="-10" fontSize="12" fill="#9ca3af">Total {reportType === 'income' ? 'Income' : reportType === 'saving' ? 'Savings' : 'Expenses'}</tspan>
                     <tspan x="50%" dy="24" fontSize="20" fontWeight="bold">
                       RM {categoryData[reportType].reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
                     </tspan>
@@ -131,7 +137,14 @@ const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)', backgroundColor: '#3a3a3a', color: '#fff8ec' }}
                     itemStyle={{ color: '#fff8ec' }}
                   />
-                  <Line type="monotone" dataKey={`${reportType}Amount`} stroke={reportType === 'income' ? '#a3e635' : '#df5584'} strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, stroke: reportType === 'income' ? '#a3e635' : '#df5584', strokeWidth: 2, fill: '#fff' }} />
+                  <Line 
+                    type="monotone" 
+                    dataKey={`${reportType}Amount`} 
+                    stroke={reportType === 'income' ? '#a3e635' : reportType === 'saving' ? '#5a5ca8' : '#df5584'} 
+                    strokeWidth={3} 
+                    dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} 
+                    activeDot={{ r: 6, stroke: reportType === 'income' ? '#a3e635' : reportType === 'saving' ? '#5a5ca8' : '#df5584', strokeWidth: 2, fill: '#fff' }} 
+                  />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -157,8 +170,8 @@ const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType
                         <span className="w-3 h-3 rounded-full" style={{ backgroundColor: data.color }}></span>
                         {data.name}
                       </td>
-                      <td className={`px-4 py-3 text-right font-bold ${reportType === 'income' ? 'text-[#a3e635]' : 'text-bajet-pink'}`}>
-                        {reportType === 'income' ? '+' : '-'}RM {parseFloat(data.amount).toFixed(2)}
+                      <td className={`px-4 py-3 text-right font-bold ${reportType === 'income' ? 'text-[#a3e635]' : reportType === 'saving' ? 'text-[#5a5ca8]' : 'text-bajet-pink'}`}>
+                        {reportType === 'income' ? '+' : reportType === 'saving' ? '+' : '-'}RM {parseFloat(data.amount).toFixed(2)}
                       </td>
                     </tr>
                   ))
@@ -166,8 +179,8 @@ const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType
                   chartData.map((data, index) => (
                     <tr key={index} className="border-b border-[#4a4a4a] hover:bg-[#2f2f2f] transition-colors">
                       <td className="px-4 py-3 font-medium text-bajet-cream">{data.name}</td>
-                      <td className={`px-4 py-3 text-right font-bold ${reportType === 'income' ? 'text-[#a3e635]' : 'text-bajet-pink'}`}>
-                        {reportType === 'income' ? '+' : '-'}RM {parseFloat(reportType === 'income' ? data.incomeAmount : data.expenseAmount).toFixed(2)}
+                      <td className={`px-4 py-3 text-right font-bold ${reportType === 'income' ? 'text-[#a3e635]' : reportType === 'saving' ? 'text-[#5a5ca8]' : 'text-bajet-pink'}`}>
+                        {reportType === 'income' ? '+' : reportType === 'saving' ? '+' : '-'}RM {parseFloat(data[`${reportType}Amount`]).toFixed(2)}
                       </td>
                     </tr>
                   ))
