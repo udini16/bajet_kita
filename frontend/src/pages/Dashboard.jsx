@@ -381,16 +381,20 @@ const Dashboard = () => {
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-bajet-dark overflow-hidden font-sans text-gray-800 dark:text-bajet-cream">
       {/* Desktop Sidebar */}
-      <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} />
+      <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} user={user} />
       
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative h-full w-full max-w-full">
         {/* Mobile Header */}
         <header className="lg:hidden bg-white dark:bg-bajet-dark border-b border-gray-200 dark:border-[#3f3f3f] p-4 sticky top-0 z-10 flex justify-between items-center shadow-sm shrink-0">
           <div className="w-48"><LogoDoodle fontSize="1.5rem" /></div>
-          <div className="w-8 h-8 rounded-full bg-bajet-purple text-bajet-cream font-bold flex items-center justify-center text-sm shadow-[0_0_10px_rgba(90,92,168,0.5)]">
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
-          </div>
+          {user?.profile_picture ? (
+            <img src={`http://localhost:8000/storage/${user.profile_picture}`} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-bajet-purple shadow-[0_0_10px_rgba(90,92,168,0.5)]" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-bajet-purple text-bajet-cream font-bold flex items-center justify-center text-sm shadow-[0_0_10px_rgba(90,92,168,0.5)]">
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+          )}
         </header>
 
         {/* Desktop Header */}

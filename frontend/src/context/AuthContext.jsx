@@ -52,8 +52,20 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const uploadProfilePicture = async (file) => {
+    const formData = new FormData();
+    formData.append('profile_picture', file);
+    const response = await api.post('/profile/picture', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    setUser(response.data.user);
+    return response.data.user;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, uploadProfilePicture }}>
       {children}
     </AuthContext.Provider>
   );

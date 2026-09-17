@@ -1,7 +1,7 @@
 import React from 'react';
 import LogoDoodle from './LogoDoodle';
 
-const Sidebar = ({ currentTab, setCurrentTab }) => {
+const Sidebar = ({ currentTab, setCurrentTab, user }) => {
   const tabs = [
     { id: 'home', label: 'Home', icon: (
       <svg className="w-5 h-5 mr-3" fill={currentTab === 'home' ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
@@ -41,6 +41,21 @@ const Sidebar = ({ currentTab, setCurrentTab }) => {
           );
         })}
       </nav>
+      {user && (
+        <div className="p-4 m-4 mt-auto border border-gray-200 dark:border-[#3f3f3f] rounded-xl flex items-center gap-3 bg-gray-50 dark:bg-[#2f2f2f]">
+          {user.profile_picture ? (
+            <img src={`http://localhost:8000/storage/${user.profile_picture}`} alt="Profile" className="w-10 h-10 rounded-full object-cover border border-bajet-purple shadow-[0_0_10px_rgba(90,92,168,0.5)]" />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-bajet-purple text-bajet-cream font-bold flex items-center justify-center text-sm shadow-[0_0_10px_rgba(90,92,168,0.5)]">
+              {user.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-800 dark:text-bajet-cream truncate">{user.name}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
