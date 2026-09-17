@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [savingPlans, setSavingPlans] = useState([]);
   
   // Navigation State
   const [currentTab, setCurrentTab] = useState('home');
@@ -40,7 +41,17 @@ const Dashboard = () => {
     fetchExpenses();
     fetchIncomes();
     fetchCategories();
+    fetchSavingPlans();
   }, []);
+
+  const fetchSavingPlans = async () => {
+    try {
+      const res = await api.get('/saving_plans');
+      setSavingPlans(res.data);
+    } catch (error) {
+      console.error('Failed to fetch saving plans', error);
+    }
+  };
 
   const fetchIncomes = async () => {
     try {
@@ -140,10 +151,37 @@ const Dashboard = () => {
     }
   };
 
+  const handleCreateSavingPlan = async (planData) => {
+    try {
+      const res = await api.post('/saving_plans', planData);
+      setSavingPlans([...savingPlans, res.data]);
+      return true;
+    } catch (error) {
+      console.error('Failed to create saving plan', error);
+      return false;
+    }
+  };
+
+  const handleAddFundsToPlan = async (planId, fundsData) => {
+    try {
+      const res = await api.post(`/saving_plans/${planId}/funds`, fundsData);
+      setSavingPlans(savingPlans.map(plan => plan.id === planId ? res.data : plan));
+      return true;
+    } catch (error) {
+      console.error('Failed to add funds', error);
+      return false;
+    }
+  };
+
   // Data Aggregations for HomeTab
   const totalExpenses = expenses.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
   const totalIncomes = incomes.reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
-  const netBalance = totalIncomes - totalExpenses;
+  const totalSavings = savingPlans.reduce((acc, plan) => {
+    const planTotal = plan.contributions?.reduce((sum, c) => sum + parseFloat(c.amount), 0) || 0;
+    return acc + planTotal;
+  }, 0);
+  
+  const netBalance = totalIncomes - totalExpenses - totalSavings;
 
   const categoryTotals = expenses.reduce((acc, curr) => {
     const catName = curr.category?.name || 'Uncategorized';
@@ -304,7 +342,13 @@ const Dashboard = () => {
           />
         );
       case 'plan':
-        return <PlanTab />;
+        return (
+          <PlanTab 
+            savingPlans={savingPlans} 
+            handleCreateSavingPlan={handleCreateSavingPlan} 
+            handleAddFundsToPlan={handleAddFundsToPlan} 
+          />
+        );
       case 'settings':
         return <SettingsTab user={user} logout={logout} />;
       default:
