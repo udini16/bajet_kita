@@ -379,14 +379,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-bajet-dark overflow-hidden font-sans text-bajet-cream">
+    <div className="flex h-screen bg-gray-100 dark:bg-bajet-dark overflow-hidden font-sans text-gray-800 dark:text-bajet-cream">
       {/* Desktop Sidebar */}
       <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} />
       
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative h-full w-full max-w-full">
         {/* Mobile Header */}
-        <header className="lg:hidden bg-bajet-dark border-b border-[#3f3f3f] p-4 sticky top-0 z-10 flex justify-between items-center shadow-sm shrink-0">
+        <header className="lg:hidden bg-white dark:bg-bajet-dark border-b border-gray-200 dark:border-[#3f3f3f] p-4 sticky top-0 z-10 flex justify-between items-center shadow-sm shrink-0">
           <div className="w-48"><LogoDoodle fontSize="1.5rem" /></div>
           <div className="w-8 h-8 rounded-full bg-bajet-purple text-bajet-cream font-bold flex items-center justify-center text-sm shadow-[0_0_10px_rgba(90,92,168,0.5)]">
             {user?.name?.charAt(0).toUpperCase() || 'U'}
@@ -394,10 +394,10 @@ const Dashboard = () => {
         </header>
 
         {/* Desktop Header */}
-        <header className="hidden lg:flex bg-bajet-dark border-b border-[#3f3f3f] p-6 justify-between items-center shrink-0">
+        <header className="hidden lg:flex bg-white dark:bg-bajet-dark border-b border-gray-200 dark:border-[#3f3f3f] p-6 justify-between items-center shrink-0">
           <div>
-            <h1 className="text-2xl font-bold text-bajet-yellow capitalize">{currentTab}</h1>
-            <p className="text-sm text-gray-400 mt-1">Welcome back, {user?.name}!</p>
+            <h1 className="text-2xl font-bold text-bajet-purple dark:text-bajet-yellow capitalize">{currentTab}</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Welcome back, {user?.name}!</p>
           </div>
             <button 
               onClick={() => handleOpenModal()}
@@ -421,18 +421,21 @@ const Dashboard = () => {
 
       {/* Add/Edit Expense Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-[#3a3a3a] rounded-2xl w-full max-w-md overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)] animate-scale-up border border-[#4a4a4a]">
-            <div className="px-6 py-4 border-b border-[#4a4a4a] flex justify-between items-center bg-[#2f2f2f]">
-              <h2 className="text-xl font-bold text-bajet-cream">{isEditing ? `Edit ${transactionType === 'income' ? 'Income' : 'Expense'}` : 'Add New Transaction'}</h2>
-              <button onClick={handleCloseModal} className="text-gray-400 hover:text-bajet-pink transition-colors p-1 rounded-full hover:bg-[#3f3f3f]">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-              </button>
-            </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-[#2f2f2f] p-6 sm:p-8 rounded-2xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-[#4a4a4a] relative">
+            <button 
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-bajet-cream"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-bajet-cream mb-6">
+              {isEditing ? `Edit ${transactionType === 'income' ? 'Income' : 'Expense'}` : 'Add New Transaction'}
+            </h2>
             
-            <form onSubmit={handleSubmit} className="p-6">
+            <form onSubmit={handleSubmit}>
               {!isEditing && (
-                <div className="flex bg-[#2f2f2f] rounded-lg p-1 mb-6 border border-[#4a4a4a]">
+                <div className="flex bg-gray-100 dark:bg-[#3a3a3a] rounded-lg p-1 mb-6 border border-gray-200 dark:border-[#4a4a4a]">
                   <button 
                     type="button" 
                     onClick={() => {
@@ -440,7 +443,7 @@ const Dashboard = () => {
                       const expenseCats = categories.filter(c => c.type === 'expense');
                       setFormData(prev => ({ ...prev, category_id: expenseCats.length > 0 ? expenseCats[0].id : '' }));
                     }}
-                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${transactionType === 'expense' ? 'bg-[#df5584] text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                    className={`flex-1 py-2 px-4 text-sm font-bold rounded-md transition-all ${transactionType === 'expense' ? 'bg-bajet-pink text-white shadow' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-bajet-cream'}`}
                   >
                     Expense
                   </button>
@@ -451,7 +454,7 @@ const Dashboard = () => {
                       const incomeCats = categories.filter(c => c.type === 'income');
                       setFormData(prev => ({ ...prev, category_id: incomeCats.length > 0 ? incomeCats[0].id : '' }));
                     }}
-                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${transactionType === 'income' ? 'bg-[#a3e635] text-[#2f2f2f] shadow-sm' : 'text-gray-400 hover:text-gray-200'}`}
+                    className={`flex-1 py-2 px-4 text-sm font-bold rounded-md transition-all ${transactionType === 'income' ? 'bg-[#a3e635] text-gray-900 shadow' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-bajet-cream'}`}
                   >
                     Income
                   </button>
@@ -460,22 +463,42 @@ const Dashboard = () => {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
-                  <input type="text" name="description" value={formData.description} onChange={handleInputChange} required className="w-full px-4 py-2 border border-[#5a5ca8] rounded-lg focus:ring-2 focus:ring-bajet-pink focus:border-bajet-pink transition-all outline-none bg-[#2f2f2f] text-bajet-cream" placeholder="e.g. Morning Coffee" />
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                  <input 
+                    type="text" 
+                    name="description" 
+                    value={formData.description} 
+                    onChange={handleInputChange} 
+                    className="w-full bg-gray-50 dark:bg-[#3a3a3a] text-gray-900 dark:text-bajet-cream rounded-lg p-3 border border-gray-200 dark:border-[#4a4a4a] focus:ring-2 focus:ring-bajet-purple outline-none" 
+                    placeholder="e.g. Groceries"
+                    required 
+                  />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Amount (RM)</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">RM</span>
-                    <input type="number" step="0.01" name="amount" value={formData.amount} onChange={handleInputChange} required className="w-full pl-12 pr-4 py-2 border border-[#5a5ca8] rounded-lg focus:ring-2 focus:ring-bajet-pink focus:border-bajet-pink transition-all outline-none bg-[#2f2f2f] text-bajet-cream" placeholder="0.00" />
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (RM)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    name="amount" 
+                    value={formData.amount} 
+                    onChange={handleInputChange} 
+                    className="w-full bg-gray-50 dark:bg-[#3a3a3a] text-gray-900 dark:text-bajet-cream rounded-lg p-3 border border-gray-200 dark:border-[#4a4a4a] focus:ring-2 focus:ring-bajet-purple outline-none" 
+                    placeholder="0.00"
+                    required 
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Category</label>
-                    <select name="category_id" value={formData.category_id} onChange={handleInputChange} required className="w-full px-4 py-2 border border-[#5a5ca8] rounded-lg focus:ring-2 focus:ring-bajet-pink focus:border-bajet-pink transition-all outline-none bg-[#2f2f2f] text-bajet-cream cursor-pointer">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                    <select 
+                      name="category_id" 
+                      value={formData.category_id} 
+                      onChange={handleInputChange} 
+                      className="w-full bg-gray-50 dark:bg-[#3a3a3a] text-gray-900 dark:text-bajet-cream rounded-lg p-3 border border-gray-200 dark:border-[#4a4a4a] focus:ring-2 focus:ring-bajet-purple outline-none cursor-pointer" 
+                      required
+                    >
                       <option value="" disabled>Select</option>
                       {categories.filter(c => c.type === transactionType).map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -484,14 +507,21 @@ const Dashboard = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Date</label>
-                    <input type="date" name="date" value={formData.date} onChange={handleInputChange} required className="w-full px-4 py-2 border border-[#5a5ca8] rounded-lg focus:ring-2 focus:ring-bajet-pink focus:border-bajet-pink transition-all outline-none bg-[#2f2f2f] text-bajet-cream cursor-pointer text-sm" />
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+                    <input 
+                      type="date" 
+                      name="date" 
+                      value={formData.date} 
+                      onChange={handleInputChange} 
+                      className="w-full bg-gray-50 dark:bg-[#3a3a3a] text-gray-900 dark:text-bajet-cream rounded-lg p-3 border border-gray-200 dark:border-[#4a4a4a] focus:ring-2 focus:ring-bajet-purple outline-none text-sm cursor-pointer" 
+                      required 
+                    />
                   </div>
                 </div>
               </div>
               
               <div className="mt-8 flex gap-3">
-                <button type="button" onClick={handleCloseModal} className="flex-1 px-4 py-2 bg-[#2f2f2f] text-gray-300 font-medium rounded-lg hover:bg-[#4a4a4a] transition-colors border border-[#4a4a4a]">Cancel</button>
+                <button type="button" onClick={handleCloseModal} className="flex-1 px-4 py-2 bg-gray-100 dark:bg-[#3a3a3a] text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-[#4a4a4a] transition-colors border border-gray-200 dark:border-[#4a4a4a]">Cancel</button>
                 <button type="submit" className="flex-1 px-4 py-2 bg-bajet-purple text-bajet-cream font-medium rounded-lg hover:bg-[#6c6ebe] transition-colors shadow-[0_0_15px_rgba(90,92,168,0.4)]">{isEditing ? 'Save Changes' : `Add ${transactionType === 'income' ? 'Income' : 'Expense'}`}</button>
               </div>
             </form>

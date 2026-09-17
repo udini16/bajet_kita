@@ -18,7 +18,7 @@ const Sidebar = ({ currentTab, setCurrentTab }) => {
   ];
 
   return (
-    <div className="hidden lg:flex flex-col w-64 bg-[#232323] border-r border-[#3f3f3f] min-h-screen">
+    <div className="hidden lg:flex flex-col w-64 bg-white dark:bg-[#232323] border-r border-gray-200 dark:border-[#3f3f3f] min-h-screen">
       <div className="p-6">
         <LogoDoodle fontSize="2rem" />
       </div>
@@ -32,7 +32,7 @@ const Sidebar = ({ currentTab, setCurrentTab }) => {
               className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                 isActive 
                   ? 'bg-bajet-purple text-bajet-cream shadow-[0_0_15px_rgba(90,92,168,0.4)]' 
-                  : 'text-gray-400 hover:bg-[#2f2f2f] hover:text-bajet-cream'
+                  : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-[#2f2f2f] dark:hover:text-bajet-cream'
               }`}
             >
               {tab.icon}

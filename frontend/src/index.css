@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-bajet-dark: #2f2f2f;
   --color-bajet-cream: #fff8ec;
@@ -24,6 +26,13 @@
 
 /* Custom styles for the app */
 body {
+  background-color: #f3f4f6; /* Gray 100 */
+  color: #1f2937; /* Gray 800 */
+  --logo-stroke: #f3f4f6;
+}
+
+.dark body {
   background-color: var(--color-bajet-dark);
   color: var(--color-bajet-cream);
+  --logo-stroke: #2f2f2f;
 }
