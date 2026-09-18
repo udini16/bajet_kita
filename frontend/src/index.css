@@ -28,11 +28,21 @@
 body {
   background-color: #f3f4f6; /* Gray 100 */
   color: #1f2937; /* Gray 800 */
-  --logo-stroke: #f3f4f6;
+  --logo-stroke: #ffffff;
+  --logo-c1: #2f2f2f;
+  --logo-c2: #5a5ca8;
+  --logo-c3: #df5584;
+  --logo-c4: #fe6842;
+  --logo-c5: #feb944;
 }
 
 .dark body {
   background-color: var(--color-bajet-dark);
   color: var(--color-bajet-cream);
   --logo-stroke: #2f2f2f;
+  --logo-c1: #fff8ec;
+  --logo-c2: #feb944;
+  --logo-c3: #fe6842;
+  --logo-c4: #df5584;
+  --logo-c5: #5a5ca8;
 }

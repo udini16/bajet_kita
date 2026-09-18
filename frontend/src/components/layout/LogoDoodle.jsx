@@ -11,13 +11,17 @@ const LogoDoodle = ({ text = 'BajetKita', fontSize = '2rem' }) => {
           @content: ${text};
           @place: center left;
           @size: 100% 0;
-          color: @pn(#fff8ec, #feb944, #fe6842, #df5584, #5a5ca8);
+          color: @pn(var(--logo-c1), var(--logo-c2), var(--logo-c3), var(--logo-c4), var(--logo-c5));
           z-index: @I(-@i);
           font-weight: 800;
           font-size: ${fontSize};
           font-family: system-ui, -apple-system, sans-serif;
           line-height: 0;
-          -webkit-text-stroke: 2px var(--logo-stroke);
+          text-shadow: 
+            -1.5px -1.5px 0 var(--logo-stroke),
+            1.5px -1.5px 0 var(--logo-stroke),
+            -1.5px 1.5px 0 var(--logo-stroke),
+            1.5px 1.5px 0 var(--logo-stroke);
           transition: @i(*.05s);
           scale: calc(1 - .02 * @i);
           rotate: calc(2deg * @dx(-2));
