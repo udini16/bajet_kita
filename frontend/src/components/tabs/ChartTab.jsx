@@ -4,11 +4,108 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType, setViewType, timeOptions }) => {
   const [reportType, setReportType] = useState('expense');
   const [chartStyle, setChartStyle] = useState('pie'); // 'pie' or 'line'
+  const [activeTooltip, setActiveTooltip] = useState(null);
 
   const formatMonth = (yyyyMm) => {
     const [y, m] = yyyyMm.split('-');
     const date = new Date(y, parseInt(m) - 1);
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const renderCalendarView = () => {
+    if (!timeFilter.startsWith('month-')) {
+      return (
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+          <svg className="w-12 h-12 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <p className="font-medium text-center px-4">Please select a specific month from the dropdown above to view the calendar heatmap.</p>
+        </div>
+      );
+    }
+
+    const [_, yearStr, monthStr] = timeFilter.split('-');
+    const year = parseInt(yearStr);
+    const month = parseInt(monthStr) - 1;
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 = Sunday
+
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    
+    const dataKey = `${reportType}Amount`;
+    const maxAmount = chartData.reduce((max, curr) => Math.max(max, curr[dataKey] || 0), 0);
+
+    const getHeatmapColor = (amount) => {
+      if (!amount || amount === 0) return undefined;
+      const intensity = Math.max(0.2, amount / maxAmount);
+      // Income: Lime (#a3e635 -> 163, 230, 53)
+      // Saving: Purple (#5a5ca8 -> 90, 92, 168)
+      // Expense: Pink (#df5584 -> 223, 85, 132)
+      if (reportType === 'income') return `rgba(163, 230, 53, ${intensity})`;
+      if (reportType === 'saving') return `rgba(90, 92, 168, ${intensity})`;
+      return `rgba(223, 85, 132, ${intensity})`;
+    };
+
+    const getDayData = (day) => {
+      return chartData.find(d => d.name === day.toString());
+    };
+
+    return (
+      <div className="h-full flex flex-col pt-2 pb-4 px-2">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center mb-2">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <div key={day} className="text-xs font-semibold text-gray-500 dark:text-gray-400">{day}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 flex-1 auto-rows-fr">
+          {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+            <div key={`empty-${i}`} className="rounded-lg opacity-0"></div>
+          ))}
+          {days.map(day => {
+            const data = getDayData(day);
+            const amount = data ? data[dataKey] : 0;
+            const hasData = amount > 0;
+            const style = hasData ? { backgroundColor: getHeatmapColor(amount) } : {};
+            const cellClass = hasData ? 'bg-opacity-100' : 'bg-gray-100 dark:bg-[#2f2f2f]';
+            
+            // Adjust text color based on intensity for readability
+            const intensity = hasData ? Math.max(0.2, amount / maxAmount) : 0;
+            let textClass = 'text-gray-700 dark:text-gray-300';
+            if (hasData) {
+              if (reportType === 'income') {
+                textClass = intensity > 0.6 ? 'text-gray-900 font-bold' : 'text-gray-800 dark:text-gray-200';
+              } else {
+                textClass = intensity > 0.4 ? 'text-white font-bold drop-shadow-md' : 'text-gray-800 dark:text-gray-200';
+              }
+            }
+            
+            return (
+              <div 
+                key={day} 
+                onClick={() => setActiveTooltip(activeTooltip === day ? null : day)}
+                className={`relative group rounded-md sm:rounded-lg border border-transparent hover:border-gray-300 dark:hover:border-gray-500 flex items-center justify-center transition-all cursor-pointer ${cellClass}`}
+                style={style}
+              >
+                <span className={`text-xs sm:text-sm ${textClass}`}>
+                  {day}
+                </span>
+                
+                <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[120px] transition-all z-50 pointer-events-none ${activeTooltip === day ? 'opacity-100 visible' : 'opacity-0 invisible sm:group-hover:opacity-100 sm:group-hover:visible'}`}>
+                  <div className="bg-[#3a3a3a] text-[#fff8ec] text-xs py-1 px-2 rounded shadow-lg flex flex-col items-center whitespace-nowrap">
+                    <span className="font-bold">
+                      {new Date(year, month, day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </span>
+                    <span>
+                      RM {amount.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="w-2 h-2 bg-[#3a3a3a] rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2"></div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -44,18 +141,18 @@ const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType
             onChange={(e) => setTimeFilter(e.target.value)}
             className="bg-transparent text-gray-800 dark:text-bajet-cream border-none rounded-md text-xs sm:text-sm font-medium py-1.5 px-2 focus:ring-0 shadow-sm cursor-pointer outline-none"
           >
-            <option value="all">All Time</option>
+            <option value="all" className="bg-white dark:bg-[#3a3a3a] text-gray-800 dark:text-bajet-cream">All Time</option>
             {timeOptions?.years?.length > 0 && (
-              <optgroup label="By Year">
+              <optgroup label="By Year" className="bg-gray-100 dark:bg-[#2f2f2f] font-semibold text-gray-900 dark:text-white">
                 {timeOptions.years.map(y => (
-                  <option key={`year-${y}`} value={`year-${y}`}>{y}</option>
+                  <option key={`year-${y}`} value={`year-${y}`} className="bg-white dark:bg-[#3a3a3a] text-gray-800 dark:text-bajet-cream font-medium">{y}</option>
                 ))}
               </optgroup>
             )}
             {timeOptions?.months?.length > 0 && (
-              <optgroup label="By Month">
+              <optgroup label="By Month" className="bg-gray-100 dark:bg-[#2f2f2f] font-semibold text-gray-900 dark:text-white">
                 {timeOptions.months.map(m => (
-                  <option key={`month-${m}`} value={`month-${m}`}>{formatMonth(m)}</option>
+                  <option key={`month-${m}`} value={`month-${m}`} className="bg-white dark:bg-[#3a3a3a] text-gray-800 dark:text-bajet-cream font-medium">{formatMonth(m)}</option>
                 ))}
               </optgroup>
             )}
@@ -76,6 +173,13 @@ const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType
               <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
             </button>
             <button 
+              onClick={() => setViewType('calendar')}
+              className={`p-1.5 sm:p-2 rounded ${viewType === 'calendar' ? 'bg-white dark:bg-[#3a3a3a] text-bajet-purple dark:text-bajet-yellow shadow' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-bajet-cream'} transition-all`}
+              title="Calendar Heatmap View"
+            >
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </button>
+            <button 
               onClick={() => setViewType('list')}
               className={`p-1.5 sm:p-2 rounded ${viewType === 'list' ? 'bg-white dark:bg-[#3a3a3a] text-bajet-purple dark:text-bajet-yellow shadow' : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-bajet-cream'} transition-all`}
               title="List View"
@@ -87,7 +191,9 @@ const ChartTab = ({ chartData, categoryData, timeFilter, setTimeFilter, viewType
       </div>
       
       <div className="flex-1 mt-2 sm:mt-4 min-h-0 relative">
-        {viewType === 'chart' ? (
+        {viewType === 'calendar' ? (
+          renderCalendarView()
+        ) : viewType === 'chart' ? (
           chartStyle === 'pie' ? (
             categoryData[reportType].length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">

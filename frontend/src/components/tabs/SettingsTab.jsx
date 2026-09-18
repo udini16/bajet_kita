@@ -5,9 +5,29 @@ import { AuthContext } from '../../context/AuthContext';
 const SettingsTab = ({ user, handleLogout, logout }) => {
   const onLogout = handleLogout || logout;
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const { uploadProfilePicture } = useContext(AuthContext);
+  const { uploadProfilePicture, updateProfileName } = useContext(AuthContext);
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+  
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState(user?.name || '');
+  const [isSavingName, setIsSavingName] = useState(false);
+
+  const handleSaveName = async () => {
+    if (!newName.trim() || newName === user?.name) {
+      setIsEditingName(false);
+      return;
+    }
+    setIsSavingName(true);
+    try {
+      await updateProfileName(newName);
+      setIsEditingName(false);
+    } catch (error) {
+      console.error("Failed to save name", error);
+    } finally {
+      setIsSavingName(false);
+    }
+  };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -52,7 +72,30 @@ const SettingsTab = ({ user, handleLogout, logout }) => {
               <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-gray-800 dark:text-bajet-cream text-lg truncate">{user?.name || 'User'}</p>
+              {isEditingName ? (
+                <div className="flex items-center gap-2 mb-1">
+                  <input 
+                    type="text" 
+                    value={newName} 
+                    onChange={(e) => setNewName(e.target.value)} 
+                    className="bg-gray-100 dark:bg-[#2f2f2f] text-gray-800 dark:text-bajet-cream rounded px-2 py-1 text-base sm:text-lg font-bold outline-none border border-bajet-purple flex-1 min-w-[120px] max-w-[200px]"
+                    autoFocus
+                  />
+                  <button onClick={handleSaveName} disabled={isSavingName} className="text-bajet-purple dark:text-bajet-yellow p-1 rounded hover:bg-gray-100 dark:hover:bg-[#4a4a4a] shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                  </button>
+                  <button onClick={() => {setIsEditingName(false); setNewName(user?.name);}} className="text-gray-500 hover:text-red-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-[#4a4a4a] shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-gray-800 dark:text-bajet-cream text-lg truncate">{user?.name || 'User'}</p>
+                  <button onClick={() => {setNewName(user?.name); setIsEditingName(true);}} className="text-gray-400 hover:text-bajet-purple dark:hover:text-bajet-yellow transition-colors shrink-0" title="Edit Username">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                  </button>
+                </div>
+              )}
               <p className="text-gray-500 dark:text-gray-400 text-sm truncate">{user?.email || 'user@example.com'}</p>
             </div>
           </div>
