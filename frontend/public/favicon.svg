@@ -1,8 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <text x="50" y="80" font-family="system-ui, -apple-system, sans-serif" font-size="90" font-weight="900" fill="#df5584" text-anchor="middle">
-    B
-  </text>
-  <text x="50" y="80" font-family="system-ui, -apple-system, sans-serif" font-size="90" font-weight="900" fill="none" stroke="#fff8ec" stroke-width="2" text-anchor="middle">
-    B
-  </text>
+  <g transform="translate(6, 4)">
+    <text x="50" y="76" font-family="system-ui, -apple-system, sans-serif" font-size="65" font-weight="900" fill="#5a5ca8" text-anchor="middle">
+      BK
+    </text>
+    <text x="47" y="73" font-family="system-ui, -apple-system, sans-serif" font-size="65" font-weight="900" fill="#df5584" text-anchor="middle">
+      BK
+    </text>
+    <text x="44" y="70" font-family="system-ui, -apple-system, sans-serif" font-size="65" font-weight="900" fill="#fe6842" text-anchor="middle">
+      BK
+    </text>
+    <text x="41" y="67" font-family="system-ui, -apple-system, sans-serif" font-size="65" font-weight="900" fill="#feb944" text-anchor="middle">
+      BK
+    </text>
+    <text x="38" y="64" font-family="system-ui, -apple-system, sans-serif" font-size="65" font-weight="900" fill="#fff8ec" stroke="#2f2f2f" stroke-width="2" stroke-linejoin="round" text-anchor="middle">
+      BK
+    </text>
+  </g>
 </svg>
