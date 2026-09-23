@@ -122,7 +122,7 @@ const Register = () => {
           />
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="absolute inset-0 flex items-center justify-center z-10 drop-shadow-2xl">
-            <LogoDoodle align="center" fontSize="4rem" height="80px" />
+            <LogoDoodle align="center" fontSize="4rem" height="80px" forceTheme="dark" />
           </div>
         </div>
 

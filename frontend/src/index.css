@@ -69,7 +69,7 @@
 }
 
 /* Custom styles for the app */
-body {
+body, .logo-light {
   background-color: #f3f4f6; /* Gray 100 */
   color: #1f2937; /* Gray 800 */
   --logo-stroke: #ffffff;
@@ -80,7 +80,7 @@ body {
   --logo-c5: #feb944;
 }
 
-.dark body {
+.dark body, .logo-dark {
   background-color: var(--color-bajet-dark);
   color: var(--color-bajet-cream);
   --logo-stroke: #2f2f2f;
