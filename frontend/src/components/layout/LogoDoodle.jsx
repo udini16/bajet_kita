@@ -1,15 +1,16 @@
 import React from 'react';
 
-const LogoDoodle = ({ text = 'BajetKita', fontSize = '2rem' }) => {
+const LogoDoodle = ({ text = 'BajetKita', fontSize = '2rem', align = 'left', height = '40px' }) => {
+  const isCenter = align === 'center';
   return (
-    <div style={{ width: '100%', height: '40px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden', marginLeft: '-36px' }}>
+    <div style={{ width: '100%', height, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: isCenter ? 'center' : 'flex-start', overflow: 'visible', marginLeft: isCenter ? '0' : '-36px' }}>
       <css-doodle click-to-update>
         {`
           :doodle {
             @grid: 5x1 / 100% 100%;
           }
           @content: ${text};
-          @place: center left;
+          @place: ${isCenter ? 'center' : 'center left'};
           @size: 100% 0;
           color: @pn(var(--logo-c1), var(--logo-c2), var(--logo-c3), var(--logo-c4), var(--logo-c5));
           z-index: @I(-@i);

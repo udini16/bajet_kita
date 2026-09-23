@@ -9,6 +9,7 @@ use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\SavingPlanController;
 
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/check-email', [AuthController::class, 'checkEmail']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {

@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import LogoDoodle from './layout/LogoDoodle';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -23,7 +24,10 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-bajet-dark flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-800 dark:text-bajet-cream">
+        <div className="flex justify-center -mt-8 mb-2">
+          <LogoDoodle align="center" fontSize="3rem" height="60px" />
+        </div>
+        <h2 className="text-center text-2xl sm:text-3xl font-extrabold text-gray-800 dark:text-bajet-cream">
           Sign in to your account
         </h2>
       </div>
@@ -40,7 +44,7 @@ const Login = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-[#4a4a4a] rounded-md shadow-sm placeholder-gray-400 bg-white dark:bg-[#2f2f2f] text-gray-900 dark:text-bajet-cream focus:outline-none focus:ring-bajet-purple focus:border-bajet-purple sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-[#4a4a4a] rounded-md shadow-sm placeholder-gray-400 bg-white dark:bg-[#2f2f2f] text-gray-900 dark:text-bajet-cream focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                 />
               </div>
             </div>
@@ -53,7 +57,7 @@ const Login = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-[#4a4a4a] rounded-md shadow-sm placeholder-gray-400 bg-white dark:bg-[#2f2f2f] text-gray-900 dark:text-bajet-cream focus:outline-none focus:ring-bajet-purple focus:border-bajet-purple sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-[#4a4a4a] rounded-md shadow-sm placeholder-gray-400 bg-white dark:bg-[#2f2f2f] text-gray-900 dark:text-bajet-cream focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                 />
               </div>
             </div>
@@ -61,14 +65,14 @@ const Login = () => {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-[0_0_15px_rgba(90,92,168,0.4)] text-sm font-medium text-white bg-bajet-purple hover:bg-[#6c6ebe] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bajet-purple transition-colors"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-[0_0_15px_rgba(249,115,22,0.4)] text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
               >
                 Sign in
               </button>
             </div>
           </form>
           <div className="mt-6 text-center">
-            <Link to="/register" className="text-bajet-purple hover:text-[#6c6ebe] dark:text-bajet-yellow dark:hover:text-[#ffd280] text-sm font-medium transition-colors">
+            <Link to="/register" className="text-orange-500 hover:text-orange-600 dark:text-bajet-yellow dark:hover:text-[#ffd280] text-sm font-medium transition-colors">
               Don't have an account? Register
             </Link>
           </div>

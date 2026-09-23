@@ -24,6 +24,50 @@
   }
 }
 
+@keyframes lineToBadge {
+  0% {
+    top: 0;
+    right: 100%;
+    width: 0%;
+    height: 100%;
+    border-radius: 6px;
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  30% {
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  60% {
+    top: 0;
+    right: 8px;
+    width: 28px;
+    height: 100%;
+    border-radius: 6px;
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    top: 50%;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    transform: translateY(-50%);
+    opacity: 1;
+  }
+}
+
+@keyframes iconFadeIn {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 /* Custom styles for the app */
 body {
   background-color: #f3f4f6; /* Gray 100 */
@@ -46,3 +90,21 @@ body {
   --logo-c4: #df5584;
   --logo-c5: #5a5ca8;
 }
+
+/* Override WebKit autofill default blue background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #fff7ed inset !important; /* light orange */
+    -webkit-text-fill-color: #1f2937 !important;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #3f1b0a inset !important; /* dark orange */
+    -webkit-text-fill-color: #fff8ec !important;
+}
+
